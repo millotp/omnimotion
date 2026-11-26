@@ -17,7 +17,7 @@ use crate::pins::{self, BoardPins};
 type TmcSerial = Uart<'static, Async>;
 /// With nothing attached, the drivers are an emulator behind the same bus.
 #[cfg(feature = "virtual-hardware")]
-type TmcSerial = omnimotion::devices::tmc2209::emulator::TmcEmulator;
+type TmcSerial = &'static mut omnimotion::devices::tmc2209::emulator::TmcEmulator;
 
 pub type TmcBus = Bus<TmcSerial, embassy_time::Delay>;
 pub type TmcDriver<'a> = Driver<'a, TmcSerial, embassy_time::Delay>;
@@ -202,8 +202,17 @@ impl Board {
         .into_async();
         // M0 and M1 are fitted; the third socket is empty, as on the machine.
         #[cfg(feature = "virtual-hardware")]
-        let uart = omnimotion::devices::tmc2209::emulator::TmcEmulator::new([true, true, false])
-            .with_pins(crate::virtual_hardware::pins);
+        // In a static so the board moves a pointer, not the emulator's registers, through frames of the
+        // application core's small stack.
+        let uart = {
+            static EMULATOR: static_cell::StaticCell<
+                omnimotion::devices::tmc2209::emulator::TmcEmulator,
+            > = static_cell::StaticCell::new();
+            EMULATOR.init_with(|| {
+                omnimotion::devices::tmc2209::emulator::TmcEmulator::new([true, true, false])
+                    .with_pins(crate::virtual_hardware::pins)
+            })
+        };
 
         let oled = inventory::find_oled(&mut i2c).await;
         let mut vmon = Vmon::new(peripherals.adc1, peripherals.vmon);

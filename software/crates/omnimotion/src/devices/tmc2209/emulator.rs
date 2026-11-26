@@ -13,7 +13,49 @@ use super::{ADDRESSES, VERSION};
 
 /// Two echoes and a reply fit with room to spare; the bus reads them back at once.
 const RX_CAPACITY: usize = 64;
-const REGISTERS: usize = 128;
+/// The registers a driver keeps, by address. The emulator lives inside the board, which firmware moves
+/// around on a small stack, so it stores these few words and not all 128 addresses: anything else
+/// reads as zero and ignores writes.
+const KNOWN: [Address; 24] = [
+    Address::GCONF,
+    Address::GSTAT,
+    Address::IFCNT,
+    Address::SLAVECONF,
+    Address::OTP_PROG,
+    Address::OTP_READ,
+    Address::IOIN,
+    Address::FACTORY_CONF,
+    Address::IHOLD_IRUN,
+    Address::TPOWERDOWN,
+    Address::TSTEP,
+    Address::TPWMTHRS,
+    Address::TCOOLTHRS,
+    Address::VACTUAL,
+    Address::SGTHRS,
+    Address::SG_RESULT,
+    Address::COOLCONF,
+    Address::MSCNT,
+    Address::MSCURACT,
+    Address::CHOPCONF,
+    Address::DRV_STATUS,
+    Address::PWMCONF,
+    Address::PWM_SCALE,
+    Address::PWM_AUTO,
+];
+const REGISTERS: usize = KNOWN.len();
+
+/// Where register `address` is kept, if it is one of [`KNOWN`].
+fn slot(address: Address) -> usize {
+    KNOWN
+        .iter()
+        .position(|&known| known == address)
+        .expect("a register the emulator keeps")
+}
+
+/// Where the register at the datagram's 7-bit `address` is kept, if the emulator keeps it.
+fn slot_of(address: u8) -> Option<usize> {
+    KNOWN.iter().position(|&known| known as u8 == address)
+}
 /// Registers carry 7-bit addresses; bit 7 of the address byte marks a write.
 const WRITE_FLAG: u8 = 0x80;
 const READ_DATAGRAM: usize = 4;
@@ -53,13 +95,13 @@ impl TmcEmulator {
     pub fn new(fitted: [bool; ADDRESSES.len()]) -> Self {
         let mut chip = [0; REGISTERS];
         // Power-on values from the datasheet.
-        chip[Address::GCONF as usize] = 0x0000_0101;
-        chip[Address::GSTAT as usize] = GSTAT_RESET;
-        chip[Address::IHOLD_IRUN as usize] = 0x0000_1F10;
-        chip[Address::TPOWERDOWN as usize] = 20;
-        chip[Address::TSTEP as usize] = 0x000F_FFFF;
-        chip[Address::CHOPCONF as usize] = 0x1000_0053;
-        chip[Address::DRV_STATUS as usize] = STANDSTILL;
+        chip[slot(Address::GCONF)] = 0x0000_0101;
+        chip[slot(Address::GSTAT)] = GSTAT_RESET;
+        chip[slot(Address::IHOLD_IRUN)] = 0x0000_1F10;
+        chip[slot(Address::TPOWERDOWN)] = 20;
+        chip[slot(Address::TSTEP)] = 0x000F_FFFF;
+        chip[slot(Address::CHOPCONF)] = 0x1000_0053;
+        chip[slot(Address::DRV_STATUS)] = STANDSTILL;
         Self {
             fitted,
             pins: |_| StepDir::default(),
@@ -131,27 +173,29 @@ impl TmcEmulator {
         else {
             return;
         };
-        let register = usize::from(datagram[2] & !WRITE_FLAG);
+        let register = datagram[2] & !WRITE_FLAG;
+        let kept = slot_of(register);
         if datagram.len() == WRITE_DATAGRAM {
             let value = u32::from_be_bytes([datagram[3], datagram[4], datagram[5], datagram[6]]);
             let registers = &mut self.registers[chip];
-            if register == Address::GSTAT as usize {
-                registers[register] &= !(value & GSTAT_FLAGS);
-            } else if register != Address::IOIN as usize && register != Address::DRV_STATUS as usize
-            {
-                registers[register] = value;
+            if let Some(kept) = kept {
+                if register == Address::GSTAT as u8 {
+                    registers[kept] &= !(value & GSTAT_FLAGS);
+                } else if register != Address::IOIN as u8 && register != Address::DRV_STATUS as u8 {
+                    registers[kept] = value;
+                }
             }
-            let count = &mut registers[Address::IFCNT as usize];
+            let count = &mut registers[slot(Address::IFCNT)];
             *count = u32::from((*count as u8).wrapping_add(1));
         } else {
             let mut reply = [0u8; WRITE_DATAGRAM];
             reply[0] = ::tmc2209::SYNC_AND_RESERVED;
             reply[1] = ::tmc2209::MASTER_ADDR;
-            reply[2] = register as u8;
-            let value = if register == Address::IOIN as usize {
+            reply[2] = register;
+            let value = if register == Address::IOIN as u8 {
                 self.inputs(chip)
             } else {
-                self.registers[chip][register]
+                kept.map_or(0, |kept| self.registers[chip][kept])
             };
             reply[3..7].copy_from_slice(&value.to_be_bytes());
             reply[7] = ::tmc2209::crc(&reply[..7]);
