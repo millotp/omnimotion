@@ -88,6 +88,15 @@ impl Board {
     /// that answers, then enables the outputs. Safe to call again after an
     /// error; refuses while the outputs are already enabled.
     pub async fn enable(&mut self, config: &Config) -> Result<(), StartError> {
+        self.configure(config).await?;
+        self.faults.enable_drivers();
+        Ok(())
+    }
+
+    /// `enable` without the last step: the drivers are configured and the
+    /// available axes set, but the outputs stay off, so nothing moves or
+    /// holds. `faults.enable_drivers()` turns them on later.
+    pub async fn configure(&mut self, config: &Config) -> Result<(), StartError> {
         if self.faults.drivers_enabled() {
             return Err(StartError::AlreadyEnabled);
         }
@@ -118,9 +127,7 @@ impl Board {
         self.motion
             .set_available_axes(self.inventory.responding_axes());
 
-        self.check_power()?;
-        self.faults.enable_drivers();
-        Ok(())
+        self.check_power()
     }
 
     fn check_power(&mut self) -> Result<(), StartError> {

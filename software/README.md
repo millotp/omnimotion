@@ -52,6 +52,9 @@ configuration or the enable. `board.enable(&config)` does the rest later and can
 be retried, which `start` cannot: on error `start` drops the board, and the step
 ISR can only be installed once. So a machine that may boot on USB alone, or with
 the e-stop open, should call `new` and retry `enable` until it succeeds.
+`board.configure(&config)` is `enable` without turning the outputs on, for a
+machine that must not hold or move its motors at boot; `faults.enable_drivers()`
+turns them on when a command needs them.
 
 ## Two workspaces
 
