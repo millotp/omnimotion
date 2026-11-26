@@ -220,9 +220,8 @@ python3 tools/ota.py target/xtensa-esp32s3-none-elf/release/examples/ota 192.168
 ```
 
 `start` panics if any of the three is unset, so a build that could never be
-updated again is caught on the bench. The board asks DHCP for the hostname
-`omnimotion`, which many routers resolve as `omnimotion.lan`; that is the
-script's default host. The `ota` example prints the address it got.
+updated again is caught on the bench. The script's host argument is the
+board's IP address, which the `ota` example prints when it gets one.
 
 Call `start` from the first core's executor, after `boot_on_second_core`.
 esp-radio needs the scheduler running, and the WiFi interrupts belong on the
@@ -311,7 +310,7 @@ Used as-is:
 | `esp-bootloader-esp-idf` | Partition-table parsing, so `Store` finds `nvs` by label instead of hardcoding an offset; the otadata reader and writer behind updates; also supplies the app descriptor the bootloader requires. Its `OtaUpdater` is not used: with blank otadata it can pick the running slot as the target, so the target is taken from the slot the MMU says is booted. |
 | `esp-alloc` | `esp-nvs` allocates its page cache, and `init_heap` installs a heap for applications that have none, plus 64 kB the bootloader hands back, which esp-radio's WiFi buffers need. |
 | `esp-radio` 0.18 | The WiFi driver. 0.18 is the line that resolves against `esp-hal` 1.1.2 and `esp-rtos` 0.3. |
-| `embassy-net` | TCP/IP and DHCP over esp-radio, and the stack applications open their own sockets on. `dhcpv4-hostname` makes the board findable by name. |
+| `embassy-net` | TCP/IP and DHCP over esp-radio, and the stack applications open their own sockets on. |
 | `embedded-storage` | The `NorFlash` trait, so image sectors are erased and written explicitly instead of through the read-modify-write `Storage` path. |
 | `serde`, `postcard` | Compact, `no_std` payload encoding for `TransactionalStore`. Not self-describing, which is why records carry a schema version. |
 | `static_cell` | `'static` storage for the executors, the segment queue and the flash handle without `static mut`. |

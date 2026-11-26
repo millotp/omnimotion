@@ -42,8 +42,6 @@ const TOKEN: &str = match option_env!("OMNIMOTION_OTA_TOKEN") {
     None => "",
 };
 
-/// Sent with the DHCP request, so most home routers resolve `omnimotion.lan`.
-pub const HOSTNAME: &str = "omnimotion";
 /// `POST /ota` with the image as the body and the token in `X-API-Key`.
 pub const OTA_PORT: u16 = 8080;
 /// One for DHCP and one for updates; the rest are the application's.
@@ -99,12 +97,10 @@ pub fn start(spawner: Spawner, wifi: WIFI<'static>) -> Stack<'static> {
     )
     .expect("WiFi controller");
 
-    let mut dhcp = DhcpConfig::default();
-    dhcp.hostname = Some(HOSTNAME.try_into().expect("hostname fits DHCP's limit"));
     static RESOURCES: StaticCell<StackResources<SOCKETS>> = StaticCell::new();
     let (stack, runner) = embassy_net::new(
         interfaces.station,
-        embassy_net::Config::dhcpv4(dhcp),
+        embassy_net::Config::dhcpv4(DhcpConfig::default()),
         RESOURCES.init(StackResources::new()),
         u64::from(Rng::new().random()),
     );

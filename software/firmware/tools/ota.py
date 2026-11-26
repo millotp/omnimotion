@@ -35,8 +35,7 @@ def main():
     parser.add_argument("file", type=pathlib.Path,
                         help="firmware ELF, e.g. target/xtensa-esp32s3-none-elf/release/examples/ota; "
                              "with --web, the web.bin from pack_web.py")
-    parser.add_argument("host", nargs="?", default="omnimotion.lan",
-                        help="board address (default: omnimotion.lan)")
+    parser.add_argument("host", help="board IP address, printed by the firmware at boot")
     parser.add_argument("--web", action="store_true",
                         help="send a web partition image to /web instead of firmware")
     parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path("build/ota.bin"),
