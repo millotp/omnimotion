@@ -58,6 +58,28 @@ pub enum StartError {
     DriverConfig,
 }
 
+impl core::fmt::Display for StartError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::AlreadyEnabled => f.write_str("the motor drivers are already enabled"),
+            Self::EStopOpen => f.write_str("e-stop open"),
+            Self::PowerNotReady(PowerSource::UsbOnly) => {
+                f.write_str("no motor supply, the board runs on USB alone")
+            }
+            Self::PowerNotReady(PowerSource::BulkOutOfRange) => {
+                f.write_str("motor supply voltage out of range")
+            }
+            Self::PowerNotReady(PowerSource::Bulk) => f.write_str("motor supply not ready"),
+            Self::NoDrivers => f.write_str("no motor driver answered"),
+            Self::DriverMismatch { axis, version } => write!(
+                f,
+                "the driver on M{axis} is not a TMC2209 (version {version:#04x})"
+            ),
+            Self::DriverConfig => f.write_str("a motor driver rejected its configuration"),
+        }
+    }
+}
+
 pub struct Board {
     pub motion: Motion,
     pub tmc: TmcBus,
