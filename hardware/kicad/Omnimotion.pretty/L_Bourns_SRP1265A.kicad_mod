@@ -1,0 +1,171 @@
+(footprint "L_Bourns_SRP1265A"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Bourns SRP1265A series shielded power inductor, 13.5x12.5x6.2mm, Bourns recommended layout (14.2 x 8.0 mm, 5.0 mm gap): https://bourns.com/docs/product-datasheets/srp1265a.pdf")
+	(tags "Bourns SRP1265A SMD inductor")
+	(property "Reference" "REF**"
+		(at 0 -7.5 0)
+		
+		(layer "F.SilkS")
+		
+		(uuid "43d159f1-b348-4555-b61f-9e18e966c07f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "L_Bourns_SRP1265A"
+		(at 0 7.5 0)
+		
+		(layer "F.Fab")
+		
+		(uuid "784113be-3b68-4e6a-b4c8-5fd6ed965e7c")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://bourns.com/docs/product-datasheets/srp1265a.pdf"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "2fde4428-700d-4c23-a863-5e4fc6d15193")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "8179e1d1-46fb-4388-aa89-ab66930b64c2")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -6.86 -6.36)
+		(end 6.86 -6.36)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "74d4a5f4-31e3-45dc-aa37-61b5db886ad6")
+	)
+	(fp_line
+		(start -6.86 6.36)
+		(end 6.86 6.36)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "43ebfeb5-f9a6-4395-afb1-10c5a9bc2395")
+	)
+	(fp_line
+		(start -6.86 -6.36)
+		(end -6.86 -4.4)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "10a61c76-79ae-4428-9feb-591996f24a42")
+	)
+	(fp_line
+		(start -6.86 4.4)
+		(end -6.86 6.36)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "936c62e3-29c6-44ba-917c-2830d407d9a9")
+	)
+	(fp_line
+		(start 6.86 -6.36)
+		(end 6.86 -4.4)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "00d016ec-dece-4a31-b76f-145be28a0fe4")
+	)
+	(fp_line
+		(start 6.86 4.4)
+		(end 6.86 6.36)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "0d3218a6-1000-4737-88aa-4a923aea416e")
+	)
+	(fp_rect
+		(start -7.35 -6.5)
+		(end 7.35 6.5)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "671547c6-1549-4527-9843-36c37ec075cd")
+	)
+	(fp_rect
+		(start -6.75 -6.25)
+		(end 6.75 6.25)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "07ac5e8b-d597-4e97-b443-706a7a693d19")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "95176181-b7d7-4d59-875d-4d08e21fdfbf")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" smd roundrect
+		(at -4.8 0)
+		(size 4.6 8)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.054348)
+		(uuid "2a33e902-8fdf-4948-9f00-1e91485febd2")
+	)
+	(pad "2" smd roundrect
+		(at 4.8 0)
+		(size 4.6 8)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.054348)
+		(uuid "265ad257-d6b6-453a-ab54-0d37f92f496a")
+	)
+	(embedded_fonts no)
+)

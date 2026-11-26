@@ -1,0 +1,5211 @@
+(kicad_sch
+	(version 20250610)
+	(generator "konnect")
+	(generator_version "10.0")
+	(uuid "33296217-a466-4ed9-a124-0b1a368eb4b6")
+	(paper "A2")
+	(lib_symbols
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762)
+						(xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762)
+						(xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector_Generic:Conn_01x03"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x03"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x03_1_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:Fuse"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "F"
+				(at 2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Fuse"
+				(at -1.905 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Fuse"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "fuse"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "*Fuse*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Fuse_0_1"
+				(rectangle
+					(start -0.762 -2.54)
+					(end 0.762 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54)
+						(xy 0 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Fuse_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector_Generic:Conn_01x04"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x04"
+				(at 0 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x04_1_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -6.35)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -5.08 0)
+					(length 3.81)
+					(name "Pin_4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:+3V3"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "+3V3"
+				(at 0 3.556 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+3V3\""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "+3V3_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27)
+						(xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54)
+						(xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0)
+						(xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+3V3_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "power:GND"
+			(power global)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "#PWR"
+				(at 0 -6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "GND"
+				(at 0 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "GND_0_1"
+				(polyline
+					(pts
+						(xy 0 0)
+						(xy 0 -1.27)
+						(xy 1.27 -1.27)
+						(xy 0 -2.54)
+						(xy -1.27 -1.27)
+						(xy 0 -1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "GND_1_1"
+				(pin power_in line
+					(at 0 0 270)
+					(length 0)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(wire
+		(pts
+			(xy 72.39 69.85)
+			(xy 76.2 69.85)
+		)
+		(uuid "22c7a6a5-0820-4f9e-83c3-2523811dcc65")
+	)
+	(wire
+		(pts
+			(xy 72.39 116.84)
+			(xy 76.2 116.84)
+		)
+		(uuid "de861b09-0b3a-4b0c-a019-399c49b17c2a")
+	)
+	(wire
+		(pts
+			(xy 72.39 162.56)
+			(xy 76.2 162.56)
+		)
+		(uuid "fb051124-5cd2-4a9c-94e9-098fb1f8fbe6")
+	)
+	(wire
+		(pts
+			(xy 182.88 69.85)
+			(xy 186.69 69.85)
+		)
+		(uuid "4b9e9fca-2aaa-4ca9-bff5-833ed1fab868")
+	)
+	(wire
+		(pts
+			(xy 182.88 116.84)
+			(xy 186.69 116.84)
+		)
+		(uuid "3c6c9cf7-1ed9-4005-a78e-5872c959f00a")
+	)
+	(wire
+		(pts
+			(xy 182.88 162.56)
+			(xy 186.69 162.56)
+		)
+		(uuid "077c186a-5c38-408f-befd-efe82563ecbb")
+	)
+	(wire
+		(pts
+			(xy 304.8 167.64)
+			(xy 308.61 167.64)
+		)
+		(uuid "d46df1d2-9664-403d-93fc-2e0f22ba4105")
+	)
+	(wire
+		(pts
+			(xy 328.93 170.18)
+			(xy 328.93 166.37)
+		)
+		(uuid "60952e9e-8a75-4e4f-abe6-f8ea20fe147a")
+	)
+	(wire
+		(pts
+			(xy 72.39 72.39)
+			(xy 76.2 72.39)
+		)
+		(uuid "574ad817-e8d7-4e8c-a8e4-474eee243286")
+	)
+	(wire
+		(pts
+			(xy 72.39 119.38)
+			(xy 76.2 119.38)
+		)
+		(uuid "ce3cc5a4-f765-4c8e-b045-b80eb5ad6e76")
+	)
+	(wire
+		(pts
+			(xy 72.39 165.1)
+			(xy 76.2 165.1)
+		)
+		(uuid "d0229b6d-6fc4-4799-88cb-44e9dc75ab10")
+	)
+	(wire
+		(pts
+			(xy 182.88 72.39)
+			(xy 186.69 72.39)
+		)
+		(uuid "38200708-5ba9-4579-bd82-b21b8a6d4884")
+	)
+	(wire
+		(pts
+			(xy 182.88 119.38)
+			(xy 186.69 119.38)
+		)
+		(uuid "b0e53a3f-3b54-4e8c-a06a-620c274cebb4")
+	)
+	(wire
+		(pts
+			(xy 182.88 165.1)
+			(xy 186.69 165.1)
+		)
+		(uuid "49c32795-8a05-4679-a4b6-349bb741d060")
+	)
+	(wire
+		(pts
+			(xy 311.15 78.74)
+			(xy 314.96 78.74)
+		)
+		(uuid "5eb435fd-72f6-4b71-b8ce-e2f4abf18b39")
+	)
+	(wire
+		(pts
+			(xy 119.38 289.56)
+			(xy 123.19 289.56)
+		)
+		(uuid "36e8fe50-be84-424d-ab63-bd742e9703cc")
+	)
+	(wire
+		(pts
+			(xy 220.98 289.56)
+			(xy 224.79 289.56)
+		)
+		(uuid "c583c571-14f2-4619-ae45-0cc26e2ab24d")
+	)
+	(wire
+		(pts
+			(xy 72.39 74.93)
+			(xy 76.2 74.93)
+		)
+		(uuid "cd58cefa-9f8a-49d4-adcb-0c60ed82f893")
+	)
+	(wire
+		(pts
+			(xy 92.71 80.01)
+			(xy 88.9 80.01)
+		)
+		(uuid "f54460b3-b34d-4872-a602-226ed44d9d3b")
+	)
+	(wire
+		(pts
+			(xy 100.33 80.01)
+			(xy 104.14 80.01)
+		)
+		(uuid "0900cfb2-893c-4b42-840c-2b168c61fd63")
+	)
+	(wire
+		(pts
+			(xy 114.3 76.2)
+			(xy 114.3 80.01)
+		)
+		(uuid "cf95e9fd-eb9e-45b5-90e1-3c3c5079daca")
+	)
+	(wire
+		(pts
+			(xy 114.3 86.36)
+			(xy 114.3 82.55)
+		)
+		(uuid "15cfeb78-9094-4418-87b6-b6d56bcc2849")
+	)
+	(wire
+		(pts
+			(xy 72.39 121.92)
+			(xy 76.2 121.92)
+		)
+		(uuid "523d977b-3f84-49c7-a9cd-5d5892e140d8")
+	)
+	(wire
+		(pts
+			(xy 92.71 127)
+			(xy 88.9 127)
+		)
+		(uuid "c15d9255-9551-4452-a3a8-f6d5734440f2")
+	)
+	(wire
+		(pts
+			(xy 100.33 127)
+			(xy 104.14 127)
+		)
+		(uuid "5ad51c04-3d54-4beb-ae79-ae8b52c8baa0")
+	)
+	(wire
+		(pts
+			(xy 114.3 121.92)
+			(xy 114.3 125.73)
+		)
+		(uuid "d7060b5e-7c33-415f-802e-e22917cba648")
+	)
+	(wire
+		(pts
+			(xy 114.3 133.35)
+			(xy 114.3 129.54)
+		)
+		(uuid "b6f34f9b-2a42-4b83-9f3b-a7ba004aa119")
+	)
+	(wire
+		(pts
+			(xy 72.39 167.64)
+			(xy 76.2 167.64)
+		)
+		(uuid "eaa197fd-7f9a-4d0e-8e4b-1a03741aaafc")
+	)
+	(wire
+		(pts
+			(xy 92.71 172.72)
+			(xy 88.9 172.72)
+		)
+		(uuid "50a31d2f-2905-4ac8-9ee7-46e2e1b735a9")
+	)
+	(wire
+		(pts
+			(xy 100.33 172.72)
+			(xy 104.14 172.72)
+		)
+		(uuid "c68a6af9-5fef-4b66-894e-5aa973d4e661")
+	)
+	(wire
+		(pts
+			(xy 114.3 168.91)
+			(xy 114.3 172.72)
+		)
+		(uuid "567c6c78-a0e7-412c-84c1-72f5b5447dbd")
+	)
+	(wire
+		(pts
+			(xy 114.3 179.07)
+			(xy 114.3 175.26)
+		)
+		(uuid "f22e20ce-380b-4ab4-863a-b0bdd6ec6aec")
+	)
+	(wire
+		(pts
+			(xy 182.88 74.93)
+			(xy 186.69 74.93)
+		)
+		(uuid "1e8b477a-329c-4a7f-a313-236912ac4e6f")
+	)
+	(wire
+		(pts
+			(xy 201.93 80.01)
+			(xy 198.12 80.01)
+		)
+		(uuid "7719a779-603c-466e-a23a-e9f641d58a8d")
+	)
+	(wire
+		(pts
+			(xy 209.55 80.01)
+			(xy 213.36 80.01)
+		)
+		(uuid "73a9fd57-7b94-40ee-a1e9-80466d55312d")
+	)
+	(wire
+		(pts
+			(xy 224.79 76.2)
+			(xy 224.79 80.01)
+		)
+		(uuid "9527e67d-f69b-4159-9217-6768b4117cc4")
+	)
+	(wire
+		(pts
+			(xy 224.79 86.36)
+			(xy 224.79 82.55)
+		)
+		(uuid "b4c60160-bcf1-4fab-abb1-61b30ffd1b90")
+	)
+	(wire
+		(pts
+			(xy 182.88 121.92)
+			(xy 186.69 121.92)
+		)
+		(uuid "21438d45-91e1-4715-8a6d-875da99adfdf")
+	)
+	(wire
+		(pts
+			(xy 201.93 127)
+			(xy 198.12 127)
+		)
+		(uuid "1272d4ec-934e-4d94-abb1-959c4807302c")
+	)
+	(wire
+		(pts
+			(xy 209.55 127)
+			(xy 213.36 127)
+		)
+		(uuid "ba9fa685-439b-4768-be33-812f4f95d03c")
+	)
+	(wire
+		(pts
+			(xy 224.79 121.92)
+			(xy 224.79 125.73)
+		)
+		(uuid "3c8dc1ec-3464-4e3f-83c6-9c384b6928f5")
+	)
+	(wire
+		(pts
+			(xy 224.79 133.35)
+			(xy 224.79 129.54)
+		)
+		(uuid "d683a0d9-08dd-4ec8-9a13-447fea6d7df0")
+	)
+	(wire
+		(pts
+			(xy 182.88 167.64)
+			(xy 186.69 167.64)
+		)
+		(uuid "0c1f2aa6-dc93-41b8-8295-99c4de6c2669")
+	)
+	(wire
+		(pts
+			(xy 201.93 172.72)
+			(xy 198.12 172.72)
+		)
+		(uuid "7f2b7f15-f870-4ee6-a61a-41c8e8fddb3e")
+	)
+	(wire
+		(pts
+			(xy 209.55 172.72)
+			(xy 213.36 172.72)
+		)
+		(uuid "c2eae635-9ea2-4d97-9b72-3df02bfb6681")
+	)
+	(wire
+		(pts
+			(xy 224.79 168.91)
+			(xy 224.79 172.72)
+		)
+		(uuid "2e2dbba3-deb1-443c-9fa5-638b20cdcb91")
+	)
+	(wire
+		(pts
+			(xy 224.79 179.07)
+			(xy 224.79 175.26)
+		)
+		(uuid "2425c500-d455-46fd-8084-0a649757c45a")
+	)
+	(wire
+		(pts
+			(xy 311.15 76.2)
+			(xy 314.96 76.2)
+		)
+		(uuid "851fc6b1-3d3d-4139-8dbf-70d7fdfb5f27")
+	)
+	(wire
+		(pts
+			(xy 297.18 167.64)
+			(xy 293.37 167.64)
+		)
+		(uuid "6de37161-3bfa-4b12-8228-d12c30dfe9df")
+	)
+	(wire
+		(pts
+			(xy 119.38 287.02)
+			(xy 123.19 287.02)
+		)
+		(uuid "93f3db2f-7c87-4218-89e4-5fd966fcc894")
+	)
+	(wire
+		(pts
+			(xy 220.98 287.02)
+			(xy 224.79 287.02)
+		)
+		(uuid "90103362-aa98-4840-b47f-5a9954872f4f")
+	)
+	(wire
+		(pts
+			(xy 311.15 81.28)
+			(xy 314.96 81.28)
+		)
+		(uuid "0a04ec44-53d2-4cad-a51c-26564dfe03ef")
+	)
+	(wire
+		(pts
+			(xy 339.09 88.9)
+			(xy 335.28 88.9)
+		)
+		(uuid "7753cebd-143c-47a7-bb44-16050ff69d55")
+	)
+	(wire
+		(pts
+			(xy 346.71 88.9)
+			(xy 350.52 88.9)
+		)
+		(uuid "be404501-c77a-49f0-948f-8245ef44b7b0")
+	)
+	(wire
+		(pts
+			(xy 364.49 95.25)
+			(xy 364.49 91.44)
+		)
+		(uuid "1a6499ae-7ab3-46eb-9fe1-8b014bb047c1")
+	)
+	(wire
+		(pts
+			(xy 187.96 237.49)
+			(xy 187.96 241.3)
+		)
+		(uuid "01a15c76-35e3-46fe-8da9-d55ca9875abc")
+	)
+	(wire
+		(pts
+			(xy 119.38 294.64)
+			(xy 123.19 294.64)
+		)
+		(uuid "3ae3f85a-f360-424c-bc4c-a4ce249dfc75")
+	)
+	(wire
+		(pts
+			(xy 220.98 294.64)
+			(xy 224.79 294.64)
+		)
+		(uuid "c9bad354-5833-4621-9974-2599776e9d80")
+	)
+	(wire
+		(pts
+			(xy 170.18 256.54)
+			(xy 170.18 260.35)
+		)
+		(uuid "5969e901-f103-464e-9d3c-d70174a505f9")
+	)
+	(wire
+		(pts
+			(xy 119.38 292.1)
+			(xy 123.19 292.1)
+		)
+		(uuid "0aa0bad2-2351-48ce-b44d-706716f6264b")
+	)
+	(wire
+		(pts
+			(xy 220.98 292.1)
+			(xy 224.79 292.1)
+		)
+		(uuid "86e9ef4f-afdf-4f1c-ab11-645ff6f51849")
+	)
+	(label "3V3_SNS"
+		(at 76.2 69.85 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bd545fc7-38b6-4644-ac23-8c8a2c7b7e45")
+	)
+	(label "3V3_SNS"
+		(at 76.2 116.84 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0fe953ef-6377-4c5b-8c37-2263ed6cdc87")
+	)
+	(label "3V3_SNS"
+		(at 76.2 162.56 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f296662d-2974-4b72-bec0-529aee25ef5f")
+	)
+	(label "3V3_SNS"
+		(at 186.69 69.85 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "dbf51d5a-a2d6-40c9-a563-3106df191526")
+	)
+	(label "3V3_SNS"
+		(at 186.69 116.84 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2b64e6dd-49fb-43d3-b184-5e19b4ccf50d")
+	)
+	(label "3V3_SNS"
+		(at 186.69 162.56 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1db00c2b-cd2b-49b3-8d8a-57cdc5dc70d3")
+	)
+	(label "3V3_SNS"
+		(at 308.61 167.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5f4d041f-0b08-4f3c-81a6-5ef4e7514763")
+	)
+	(label "3V3_SNS"
+		(at 328.93 166.37 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bae8abae-2fa3-4085-9723-213e9aa823b4")
+	)
+	(label "J11_SIG"
+		(at 76.2 74.93 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "894f9dce-3db1-4391-82aa-0a76d5848ce1")
+	)
+	(label "J11_SIG"
+		(at 88.9 80.01 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "76568002-b720-464b-aba3-945bf89fc1d3")
+	)
+	(label "J12_SIG"
+		(at 76.2 121.92 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5b7bda57-1f38-4f70-a9cc-22fa443ad4ae")
+	)
+	(label "J12_SIG"
+		(at 88.9 127 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f19c7a25-244d-4875-a6b5-1edebec4b8bf")
+	)
+	(label "J13_SIG"
+		(at 76.2 167.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "754ca301-35ea-4e07-a4e8-b24b9f057c46")
+	)
+	(label "J13_SIG"
+		(at 88.9 172.72 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "579fc64d-51ab-4fda-af74-a05577e51bfe")
+	)
+	(label "J14_SIG"
+		(at 186.69 74.93 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c4a176e9-086b-4da9-9578-68075a7b9ce4")
+	)
+	(label "J14_SIG"
+		(at 198.12 80.01 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "fe25ae8f-62a1-433a-881f-2ecd756723b8")
+	)
+	(label "J15_SIG"
+		(at 186.69 121.92 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ef9a44a7-ac0b-4906-80b1-cdeaff8b008a")
+	)
+	(label "J15_SIG"
+		(at 198.12 127 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "c219193b-750e-41ff-b5e1-a9bd789d27b1")
+	)
+	(label "J16_SIG"
+		(at 186.69 167.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e398f09f-cb39-4cf0-9162-0722ce1d76bc")
+	)
+	(label "J16_SIG"
+		(at 198.12 172.72 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "808bf902-9a71-4677-9b1c-412c86f4bdc8")
+	)
+	(label "J17_SIG"
+		(at 314.96 81.28 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "394483eb-202f-491a-8ca1-2e8803d13f81")
+	)
+	(label "J17_SIG"
+		(at 335.28 88.9 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "6f742bab-4601-4359-a788-0c65c694c0e9")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 76.2 72.39 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a9b94400-ac1f-4801-8ef7-91a5e2707b24")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 76.2 119.38 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b2f3b763-5241-4735-b095-b67f3ab14aa8")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 76.2 165.1 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0107c096-641c-4923-b2e4-c61e6c29d30d")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 186.69 72.39 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "80051a99-b954-4376-bd9b-62a0b4469fb3")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 186.69 119.38 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2d234c4e-3e87-4a86-8e07-3b78d475b440")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 186.69 165.1 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2d255cf9-6e59-4ab4-b030-825fdbc9bffc")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 314.96 78.74 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "868262e8-94ee-4925-b086-5b56ffe3a1f8")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 123.19 289.56 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "19dd76b8-6e3d-4d11-9e91-113fad9fd832")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 224.79 289.56 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "eb539fc9-27eb-46c2-aec3-1e298a6374e8")
+	)
+	(global_label "E0"
+		(shape input)
+		(at 104.14 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5fb46b00-ac46-4087-be1c-fa7ef113afc5")
+	)
+	(global_label "E0"
+		(shape input)
+		(at 114.3 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "41780440-c255-4496-803b-c9f01cb59e97")
+	)
+	(global_label "E0"
+		(shape input)
+		(at 114.3 82.55 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e8c2d946-9412-41b3-a6e3-acfaf899c27b")
+	)
+	(global_label "E1"
+		(shape input)
+		(at 104.14 127 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a4726aa9-6cb5-4fd5-82d9-2ba97aaee105")
+	)
+	(global_label "E1"
+		(shape input)
+		(at 114.3 125.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "de088a0a-dbdf-432f-a2af-b60887595269")
+	)
+	(global_label "E1"
+		(shape input)
+		(at 114.3 129.54 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6fe1665c-057b-4338-9f01-bb1abefef6ef")
+	)
+	(global_label "E2"
+		(shape input)
+		(at 104.14 172.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d1426e30-7cbc-4df8-947c-78aad99d0454")
+	)
+	(global_label "E2"
+		(shape input)
+		(at 114.3 172.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "caa2ad5f-3f60-4b4f-95fb-8799087a9fa6")
+	)
+	(global_label "E2"
+		(shape input)
+		(at 114.3 175.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "4aac8e16-6413-426e-90f9-e6eb24d56541")
+	)
+	(global_label "E3"
+		(shape input)
+		(at 213.36 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3583e01b-ac74-47e9-94fd-a122de9a67d5")
+	)
+	(global_label "E3"
+		(shape input)
+		(at 224.79 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "99abd05c-fd24-4a70-9289-51877ffc0d36")
+	)
+	(global_label "E3"
+		(shape input)
+		(at 224.79 82.55 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "cde771dd-86a8-4264-9f56-4e87a6f7c532")
+	)
+	(global_label "E4"
+		(shape input)
+		(at 213.36 127 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "38de5d15-1d89-4673-b8a9-e8de256edce1")
+	)
+	(global_label "E4"
+		(shape input)
+		(at 224.79 125.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2796b0e5-27df-44b6-8e89-41807b28d757")
+	)
+	(global_label "E4"
+		(shape input)
+		(at 224.79 129.54 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3ea47079-980b-48ae-a93b-1a14aad5386b")
+	)
+	(global_label "E5"
+		(shape input)
+		(at 213.36 172.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "985658eb-8420-4a8b-9fe7-154a5b72037f")
+	)
+	(global_label "E5"
+		(shape input)
+		(at 224.79 172.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f99d020f-a155-4827-81bf-c1ceb596648a")
+	)
+	(global_label "E5"
+		(shape input)
+		(at 224.79 175.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8eebfc1c-c8ce-4ec7-83d7-c124cfc30c1a")
+	)
+	(global_label "+3V3"
+		(shape input)
+		(at 314.96 76.2 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "77ee694f-a0e6-4a09-befa-01626587c2ff")
+	)
+	(global_label "+3V3"
+		(shape input)
+		(at 293.37 167.64 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "8d1fcd20-befe-4660-87f0-9b4e673ca185")
+	)
+	(global_label "+3V3"
+		(shape input)
+		(at 123.19 287.02 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "15776f37-c19f-4736-9af4-457a7609c0f5")
+	)
+	(global_label "+3V3"
+		(shape input)
+		(at 224.79 287.02 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2dfb8cb6-7284-423c-8839-82a3eedb1ec1")
+	)
+	(global_label "AIN"
+		(shape input)
+		(at 350.52 88.9 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "abdfa774-594e-47e4-bc74-24149236daa0")
+	)
+	(global_label "AIN"
+		(shape input)
+		(at 364.49 91.44 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c5c21166-0cad-4114-a762-f64ad5a4a4e9")
+	)
+	(global_label "I2C_SCL"
+		(shape input)
+		(at 187.96 241.3 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9e99ff26-d3e1-4f81-8c13-1561f5604da3")
+	)
+	(global_label "I2C_SCL"
+		(shape input)
+		(at 123.19 294.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b369ce7b-f676-4532-9681-21616845a581")
+	)
+	(global_label "I2C_SCL"
+		(shape input)
+		(at 224.79 294.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "47c5d3b0-f383-4a0b-9d48-a2085651dbad")
+	)
+	(global_label "I2C_SDA"
+		(shape input)
+		(at 170.18 260.35 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e17de416-6caf-42f2-88c6-2dadabf46191")
+	)
+	(global_label "I2C_SDA"
+		(shape input)
+		(at 123.19 292.1 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e91a502c-4ee7-483b-bebc-d20fe271b483")
+	)
+	(global_label "I2C_SDA"
+		(shape input)
+		(at 224.79 292.1 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8dd5a4b6-e6fe-477a-a71d-2d3d7c33ceee")
+	)
+	
+  (text "Endstop, analogue and I²C interfaces"
+    (at 27 29 0)
+    (effects (font (size 3.3 3.3) (bold yes)) (justify left bottom))
+    (uuid "8bfaed52-fb2a-4aba-99da-5db239fd836a")
+  )
+  (text "Six endstop filters"
+    (at 35 48 0)
+    (effects (font (size 2.05 2.05) (bold yes)) (justify left bottom))
+    (uuid "0f19f17d-b1e1-4a1c-98ca-a82144c1f0fd")
+  )
+  (text "Analogue input"
+    (at 354 50 0)
+    (effects (font (size 2.05 2.05) (bold yes)) (justify left bottom))
+    (uuid "fd2fdd19-3bf5-4984-a75d-db7525f7b729")
+  )
+  (text "Fused endstop supply"
+    (at 354 157 0)
+    (effects (font (size 2.05 2.05) (bold yes)) (justify left bottom))
+    (uuid "a00e76ee-f0bd-4b53-b53b-de58ce1e670d")
+  )
+  (text "I²C and pull-ups"
+    (at 38 215 0)
+    (effects (font (size 2.05 2.05) (bold yes)) (justify left bottom))
+    (uuid "0976f24b-fe0f-4fdc-a0ac-0d3fd2492165")
+  )
+  (text "Endstop connector order is 3V3 / GND / SIG.\nUse dry contacts or 3.3 V open-drain sensors.\nKeep raw signal runs to their series resistors short."
+    (at 353 218 0)
+    (effects (font (size 1.45 1.45)) (justify left bottom))
+    (uuid "b390250a-f696-4379-9d9f-ab76813b2ac1")
+  )(symbol
+		(lib_id "Device:R")
+		(at 96.52 80.01 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "49ba393c-8cf7-46ac-b4a6-1908575bafc5")
+		(property "Reference" "R46"
+			(at 96.52 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 96.52 83.82 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 96.52 80.01 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 80.01 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 96.52 80.01 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R46")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 114.3 72.39 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8b4f6e34-9b44-42e0-a595-abf3c9150be2")
+		(property "Reference" "R40"
+			(at 121.92 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10 k"
+			(at 121.92 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 114.3 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 114.3 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R40")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 114.3 90.17 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bab51c65-9768-4c28-98c1-2dec0fcbdf04")
+		(property "Reference" "C55"
+			(at 114.935 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 114.935 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 114.3 90.17 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 90.17 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 114.3 90.17 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C55")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 96.52 127 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ff0bdb66-9a2d-42dc-8853-83394b74f912")
+		(property "Reference" "R47"
+			(at 96.52 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 96.52 130.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 96.52 127 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 127 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 96.52 127 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R47")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 114.3 118.11 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ca732c3b-a397-44fd-9975-8df2f9ee56f4")
+		(property "Reference" "R41"
+			(at 121.92 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10 k"
+			(at 121.92 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 114.3 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 114.3 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R41")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 114.3 137.16 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "868a2222-edd5-4c71-8fdd-0e2f1843db8f")
+		(property "Reference" "C56"
+			(at 114.935 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 114.935 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 114.3 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 114.3 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C56")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 96.52 172.72 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fc6d5c2d-633b-40d8-8af9-7ea40fa23955")
+		(property "Reference" "R48"
+			(at 96.52 168.91 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 96.52 176.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 96.52 172.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 172.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 96.52 172.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R48")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 114.3 165.1 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b8b278fe-a842-4dff-b526-b89f0b17b04b")
+		(property "Reference" "R42"
+			(at 121.92 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10 k"
+			(at 121.92 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 114.3 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 114.3 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R42")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 114.3 182.88 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "572fe19b-2b76-46e8-abde-a5e7d30f548e")
+		(property "Reference" "C57"
+			(at 114.935 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 114.935 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 114.3 182.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 182.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 114.3 182.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C57")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 205.74 80.01 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2e8b8391-6d86-449c-93fd-05516928a3bc")
+		(property "Reference" "R49"
+			(at 205.74 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 205.74 83.82 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 205.74 80.01 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 205.74 80.01 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 205.74 80.01 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R49")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 224.79 72.39 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "255ac240-646a-4a46-a30b-61e487e0bc98")
+		(property "Reference" "R43"
+			(at 232.41 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10 k"
+			(at 232.41 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 224.79 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 224.79 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R43")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 224.79 90.17 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b80a6e73-1875-4ba5-9df8-37cf0fd5956e")
+		(property "Reference" "C58"
+			(at 225.425 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 225.425 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 224.79 90.17 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 90.17 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 224.79 90.17 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C58")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 205.74 127 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1d1e18ef-9bb3-4207-904f-ee10f9c39795")
+		(property "Reference" "R50"
+			(at 205.74 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 205.74 130.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 205.74 127 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 205.74 127 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 205.74 127 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R50")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 224.79 118.11 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e6f8db8a-564e-4090-b695-3e5ed5867b34")
+		(property "Reference" "R44"
+			(at 232.41 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10 k"
+			(at 232.41 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 224.79 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 224.79 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R44")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 224.79 137.16 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bd0b24fa-501a-450f-9d5a-0ac68c49f027")
+		(property "Reference" "C59"
+			(at 225.425 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 225.425 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 224.79 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 224.79 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C59")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 205.74 172.72 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "20a827e2-62de-4d27-9906-f9246778607d")
+		(property "Reference" "R51"
+			(at 205.74 168.91 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 205.74 176.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 205.74 172.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 205.74 172.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 205.74 172.72 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R51")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 224.79 165.1 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "012e0cac-eaf8-4a30-8e9b-11550d3bc7e8")
+		(property "Reference" "R45"
+			(at 232.41 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10 k"
+			(at 232.41 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 224.79 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 224.79 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R45")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 224.79 182.88 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1fba373f-6514-4de7-a843-54ee166ca815")
+		(property "Reference" "C60"
+			(at 225.425 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 225.425 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 224.79 182.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 182.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 224.79 182.88 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C60")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 342.9 88.9 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e9153b1f-9c60-47df-9e22-8ab9b90c87c3")
+		(property "Reference" "R52"
+			(at 342.9 85.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1 k"
+			(at 342.9 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 342.9 88.9 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 342.9 88.9 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 342.9 88.9 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R52")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 364.49 99.06 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4ec2b4fa-3ea8-4c6b-88a0-1995b9d6e0d3")
+		(property "Reference" "C61"
+			(at 365.125 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100 nF"
+			(at 365.125 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 364.49 99.06 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 364.49 99.06 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 364.49 99.06 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C61")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 328.93 173.99 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c7eaf2c8-825b-4482-81c8-462fd1a4ae11")
+		(property "Reference" "C63"
+			(at 329.565 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10 µF 16 V"
+			(at 329.565 176.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 328.93 173.99 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 328.93 173.99 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 328.93 173.99 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "C63")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 187.96 233.68 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4da2e68d-5fda-432a-84d4-d598d5d72f50")
+		(property "Reference" "R39"
+			(at 195.58 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7 k"
+			(at 195.58 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 187.96 233.68 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 233.68 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 187.96 233.68 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R39")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 170.18 252.73 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "91329a4b-6c1e-4ee7-b06f-9be40ff10772")
+		(property "Reference" "R38"
+			(at 177.8 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4.7 k"
+			(at 177.8 254 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 170.18 252.73 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 170.18 252.73 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 170.18 252.73 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "R38")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 67.31 72.39 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a2672988-6277-4c01-ac31-56e06e899ed3")
+		(property "Reference" "J11"
+			(at 67.31 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 67.31 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 67.31 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 67.31 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 67.31 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 67.31 119.38 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7e2c1c96-9bcb-497c-a597-9fb1aba59747")
+		(property "Reference" "J12"
+			(at 67.31 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 67.31 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 67.31 119.38 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 67.31 119.38 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 67.31 119.38 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 67.31 165.1 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "14a16cb2-ce18-48bc-82f9-b24390c5e319")
+		(property "Reference" "J13"
+			(at 67.31 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 67.31 170.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 67.31 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 67.31 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 67.31 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 177.8 72.39 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ca54d353-cd00-4ea1-806c-847a39b32f69")
+		(property "Reference" "J14"
+			(at 177.8 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 177.8 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 177.8 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 177.8 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 177.8 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 177.8 119.38 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b1baaf22-afcf-4b13-9d46-ddee4c783c22")
+		(property "Reference" "J15"
+			(at 177.8 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 177.8 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 177.8 119.38 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 177.8 119.38 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 177.8 119.38 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 177.8 165.1 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "407bdd65-af4a-45b0-a094-8bc6f55845a5")
+		(property "Reference" "J16"
+			(at 177.8 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 177.8 170.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 177.8 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 177.8 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 177.8 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 306.07 78.74 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "00c3764b-1724-44e6-b1d2-842211d4e96c")
+		(property "Reference" "J17"
+			(at 306.07 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3P 2.54"
+			(at 306.07 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 306.07 78.74 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 306.07 78.74 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 306.07 78.74 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Fuse")
+		(at 300.99 167.64 90)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "dd7c3aea-7b23-41d0-be82-28729cb9a7a1")
+		(property "Reference" "F3"
+			(at 300.99 165.608 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0.1 A PTC"
+			(at 300.99 169.545 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Fuse:Fuse_1206_3216Metric"
+			(at 300.99 167.64 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 300.99 167.64 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Fuse"
+			(at 300.99 167.64 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "F3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x04")
+		(at 114.3 289.56 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5adc831c-b5bb-47fd-8f5f-bec27235fba9")
+		(property "Reference" "J6"
+			(at 114.3 284.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4P 2.54  OLED"
+			(at 114.3 297.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+			(at 114.3 289.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 289.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 114.3 289.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x04")
+		(at 215.9 289.56 0)
+		(mirror y)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "209bf330-ac66-4351-a043-d2dceb30da89")
+		(property "Reference" "J7"
+			(at 215.9 284.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4P 2.54  I²C EXP"
+			(at 215.9 297.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+			(at 215.9 289.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.9 289.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 215.9 289.56 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "J7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 114.3 68.58 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ac00835c-ec10-4fc5-802e-7674d1ddb0f0")
+		(property "Reference" "#PWR197"
+			(at 114.3 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 114.3 65.024 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 68.58 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 68.58 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 114.3 68.58 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR197")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 114.3 93.98 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3110e8ef-7a6e-43eb-86d6-19d20724fc11")
+		(property "Reference" "#PWR198"
+			(at 114.3 100.33 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 114.3 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 114.3 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR198")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 114.3 114.3 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ea7127b7-b0e7-46dd-8dd3-de697cb090d1")
+		(property "Reference" "#PWR199"
+			(at 114.3 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 114.3 110.744 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 114.3 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 114.3 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 114.3 114.3 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR199")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 114.3 140.97 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d4e5d06a-57b5-4c4a-a72b-ce82fd97706d")
+		(property "Reference" "#PWR200"
+			(at 114.3 147.32 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 114.3 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 140.97 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 140.97 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 114.3 140.97 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR200")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 114.3 161.29 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1988b8ee-89a0-46b2-bef9-bfb2557f1fd6")
+		(property "Reference" "#PWR201"
+			(at 114.3 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 114.3 157.734 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 161.29 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 161.29 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 114.3 161.29 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR201")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 114.3 186.69 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "957b338f-6129-4a2a-8969-09d4f2bae414")
+		(property "Reference" "#PWR202"
+			(at 114.3 193.04 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 114.3 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 114.3 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 114.3 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 114.3 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR202")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 224.79 68.58 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4fabe8c5-4d33-4e2c-970f-52f3e7ee92af")
+		(property "Reference" "#PWR203"
+			(at 224.79 72.39 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 224.79 65.024 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 224.79 68.58 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 68.58 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 224.79 68.58 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR203")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 224.79 93.98 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2febb418-8003-4a1c-b743-83b84c0a4038")
+		(property "Reference" "#PWR204"
+			(at 224.79 100.33 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 224.79 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 224.79 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 224.79 93.98 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR204")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 224.79 114.3 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "27fe7d2f-76cd-421c-a89c-cdab41bddf2c")
+		(property "Reference" "#PWR205"
+			(at 224.79 118.11 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 224.79 110.744 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 224.79 114.3 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 114.3 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 224.79 114.3 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR205")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 224.79 140.97 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8b6cfe8e-f06a-4e83-98aa-000ebb31e61e")
+		(property "Reference" "#PWR206"
+			(at 224.79 147.32 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 224.79 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 224.79 140.97 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 140.97 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 224.79 140.97 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR206")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 224.79 161.29 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5eda3b1c-cda8-47f4-be6b-33e5302f4624")
+		(property "Reference" "#PWR207"
+			(at 224.79 165.1 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 224.79 157.734 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 224.79 161.29 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 161.29 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 224.79 161.29 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR207")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 224.79 186.69 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "602adc07-7226-47cd-9dcd-7466ba53bfad")
+		(property "Reference" "#PWR208"
+			(at 224.79 193.04 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 224.79 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 224.79 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 224.79 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 224.79 186.69 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR208")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 364.49 102.87 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bed3a3ff-2cd7-4023-a57d-ae72542dd86a")
+		(property "Reference" "#PWR209"
+			(at 364.49 109.22 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 364.49 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 364.49 102.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 364.49 102.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 364.49 102.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR209")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 328.93 177.8 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "faeebbe2-a2ed-4194-8114-5ebfde0f9e6e")
+		(property "Reference" "#PWR210"
+			(at 328.93 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 328.93 181.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 328.93 177.8 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 328.93 177.8 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 328.93 177.8 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR210")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 187.96 229.87 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ea6fb459-995d-426f-a636-c1ee95f451db")
+		(property "Reference" "#PWR211"
+			(at 187.96 233.68 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 187.96 226.314 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 187.96 229.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 229.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 187.96 229.87 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR211")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 170.18 248.92 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "aadf06bf-65aa-4774-a467-df375a611ea1")
+		(property "Reference" "#PWR212"
+			(at 170.18 252.73 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 170.18 245.364 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 170.18 248.92 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 170.18 248.92 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3V3\""
+			(at 170.18 248.92 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd/95a204dc-b063-4f7f-b369-c44778f4c160"
+					(reference "#PWR212")
+					(unit 1)
+				)
+			)
+		)
+	)
+)

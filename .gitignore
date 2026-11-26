@@ -1,0 +1,8 @@
+.DS_Store
+target/
+__pycache__/
+build/
+omnimotion_footprints.pdf
+.cursor/
+*.lck
+*.kicad_prl

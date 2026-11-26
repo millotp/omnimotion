@@ -1,0 +1,22 @@
+# Partition table for the ESP32-S3-WROOM-1 N16R8 (16 MB flash).
+#
+# The bootloader occupies 0x0-0x8000 and this table itself 0x8000-0x9000, so
+# the first partition starts at 0x9000. App partitions must begin on a 64 kB
+# boundary; data partitions only need 4 kB alignment.
+#
+# nvs holds settings and checkpoints; web holds the gzipped UI assets. They are
+# separate so that flashing a new UI image never erases settings. Both are far
+# larger than they need to be, because NVS reclaims space by rewriting whole
+# pages and headroom is what keeps writes cheap.
+#
+# OTA updates alternate between ota_0 and ota_1; otadata records which one
+# boots. There is no factory slot, so blank otadata boots ota_0, which is where
+# a USB flash puts the image.
+#
+# Name,     Type, SubType, Offset,   Size
+nvs,        data, nvs,     0x9000,   0x20000
+web,        data, nvs,     0x29000,  0x20000
+phy_init,   data, phy,     0x49000,  0x1000
+otadata,    data, ota,     0x4A000,  0x2000
+ota_0,      app,  ota_0,   0x50000,  0x400000
+ota_1,      app,  ota_1,   0x450000, 0x400000

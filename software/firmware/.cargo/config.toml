@@ -1,0 +1,19 @@
+[build]
+target = "xtensa-esp32s3-none-elf"
+# esp-hal's linker script puts its writable `.rotext_dummy` gap in the same
+# segment as `.text`, so ld flags that segment RWX. The flags are meaningless on
+# the chip: espflash flattens the ELF and IROM is mapped read-only regardless.
+rustflags = ["-C", "link-arg=-Tlinkall.x", "-C", "link-arg=-Wl,--no-warn-rwx-segments"]
+
+[target.xtensa-esp32s3-none-elf]
+# Without --partition-table espflash writes its own default, whose nvs is only
+# 24 kB and would leave no room for the web assets. Erasing otadata makes a USB
+# flash boot ota_0 even after an OTA update has moved the board to ota_1.
+runner = "espflash flash --monitor --partition-table partitions.csv --target-app-partition ota_0 --erase-parts otadata"
+
+[env]
+ESP_LOG = "info"
+
+# The esp toolchain ships rust-src rather than a prebuilt core for Xtensa.
+[unstable]
+build-std = ["core", "alloc"]

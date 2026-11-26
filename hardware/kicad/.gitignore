@@ -1,0 +1,4 @@
+.history
+*.lck
+*.kicad_prl
+fabrication/

@@ -1,0 +1,23 @@
+(version 1)
+
+(rule "Board copper clearance"
+  (constraint clearance (min 0.20mm)))
+
+# JLCPCB multilayer limits: https://jlcpcb.com/capabilities/pcb-capabilities
+
+(rule "JLCPCB plated pad hole to inner copper"
+  (layer inner)
+  (condition "A.Pad_Type == 'Through-hole'")
+  (constraint hole_clearance (min 0.30mm)))
+
+(rule "JLCPCB plated pad hole to track"
+  (condition "A.Pad_Type == 'Through-hole' && B.Type == 'Track'")
+  (constraint hole_clearance (min 0.28mm)))
+
+(rule "JLCPCB pad hole to pad hole"
+  (condition "A.Type == 'Pad' && B.Type == 'Pad'")
+  (constraint hole_to_hole (min 0.45mm)))
+
+(rule "JLCPCB plated pad annular ring"
+  (condition "A.Type == 'Pad' && A.isPlated()")
+  (constraint annular_width (min 0.15mm)))

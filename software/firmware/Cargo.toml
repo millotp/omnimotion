@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = ["crates/omnimotion-board"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/millotp/omnimotion"
+
+[profile.release]
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
+debug = 2
+
+# The step ISR runs 40 000 times a second, so the crates on that path are
+# optimised for speed even though the image as a whole is size-optimised.
+[profile.release.package.omnimotion-board]
+opt-level = 3
+
+[profile.release.package.omnimotion]
+opt-level = 3
+
+[profile.dev]
+opt-level = 1

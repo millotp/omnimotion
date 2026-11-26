@@ -1,0 +1,850 @@
+(kicad_sch
+	(version 20250610)
+	(generator "konnect")
+	(generator_version "10.0")
+	(uuid "3dfc5586-7f28-428b-ba5a-10e4b35298fd")
+	(paper "A4")
+	(lib_symbols
+		(symbol "Mechanical:MountingHole_Pad"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "H"
+				(at 0 6.35 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "MountingHole_Pad"
+				(at 0 4.445 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Mounting Hole with connection"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*Pad*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "MountingHole_Pad_0_1"
+				(circle
+					(center 0 1.27)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "MountingHole_Pad_1_1"
+				(pin input line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(wire
+		(pts
+			(xy 31.75 186.69)
+			(xy 31.75 189.23)
+		)
+		(uuid "a9fcb829-084f-4ffe-bda1-0e6356656b53")
+	)
+	(wire
+		(pts
+			(xy 63.5 186.69)
+			(xy 63.5 189.23)
+		)
+		(uuid "c88ba4c7-3763-42e6-bcb3-ca7b2edcb502")
+	)
+	(wire
+		(pts
+			(xy 95.25 186.69)
+			(xy 95.25 189.23)
+		)
+		(uuid "4670af1c-cb87-4855-9d0d-d870a771f953")
+	)
+	(wire
+		(pts
+			(xy 127 186.69)
+			(xy 127 189.23)
+		)
+		(uuid "ead28b4a-52ea-45c6-b917-670953cce3de")
+	)
+	(text "NOT YET FABRICATED - design unvalidated against hardware"
+		(at 25 20 0)
+		(effects
+			(font
+				(size 2 2)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "fabc6238-ccec-4efd-8d00-f18553add526")
+	)
+	(text "OMNIMOTION  |  THREE-AXIS MOTION CONTROLLER"
+		(at 26 24 0)
+		(effects
+			(font
+				(size 2.7 2.7)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "1c1fb535-b077-4e4d-af90-057df3b8f4f8")
+	)
+	(text "Rev A.1  •  ESP32-S3  •  12–24 V input  •  Three TMC2209 channels"
+		(at 26 27.5 0)
+		(effects
+			(font
+				(size 1.45 1.45)
+			)
+			(justify left bottom)
+		)
+		(uuid "cf2d851e-2fa5-4c50-b468-29370269bf23")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 31.75 189.23 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7242dfab-d864-4313-a24c-bf1f850e720e")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 63.5 189.23 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "de7f0eab-c59f-48dc-83a2-e4fcc4eeb9a4")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 95.25 189.23 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0cd09bc9-2526-4ae0-8c72-359a8d031049")
+	)
+	(global_label "GND"
+		(shape input)
+		(at 127 189.23 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f08ddd0c-7c62-4ad0-a780-13e1a6eed1d4")
+	)
+	(sheet
+		(at 25 30)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "6d25850d-b85f-453c-acbe-10501ca8b258")
+		(property "Sheetname" "Input protection and motor stop"
+			(at 25 29.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "02_input_protection.kicad_sch"
+			(at 25 55.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 155 30)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "9d777f49-a8e3-4126-877c-69e73a75d207")
+		(property "Sheetname" "Buck, priority mux and 3V3"
+			(at 155 29.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "03_power_rails.kicad_sch"
+			(at 155 55.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25 66)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "73bceba9-c9e6-4524-bd11-33869f8041e5")
+		(property "Sheetname" "ESP32-S3 and native USB"
+			(at 25 65.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "04_esp32_usb.kicad_sch"
+			(at 25 91.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 155 66)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "8ed6e251-4143-43a5-9017-5da5e2ade3bb")
+		(property "Sheetname" "Axis M0 - UART address 0"
+			(at 155 65.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "05_axis_m0.kicad_sch"
+			(at 155 91.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25 102)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "6691ad9f-1b48-4961-a832-bcaa9843d28b")
+		(property "Sheetname" "Axis M1 - UART address 1"
+			(at 25 101.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "06_axis_m1.kicad_sch"
+			(at 25 127.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 155 102)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "8ce426c2-196b-441f-bc04-e7fa31a2ab4f")
+		(property "Sheetname" "Axis M2 - UART address 2"
+			(at 155 101.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "07_axis_m2.kicad_sch"
+			(at 155 127.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 25 138)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "95a204dc-b063-4f7f-b369-c44778f4c160")
+		(property "Sheetname" "Endstops, analog and I2C"
+			(at 25 137.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "08_io_endstops.kicad_sch"
+			(at 25 163.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "8")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 155 138)
+		(size 110 25)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0)
+		)
+		(uuid "a983d6a9-14c6-4b46-a004-92da63ecc973")
+		(property "Sheetname" "Outputs and test points"
+			(at 155 137.365 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "09_outputs_test.kicad_sch"
+			(at 155 163.635 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(page "9")
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 31.75 184.15 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f0bb9211-1cbf-49ea-a329-98e063f074c1")
+		(property "Reference" "MH1"
+			(at 31.75 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M3 chassis GND"
+			(at 31.75 179.705 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_ISO7380_Pad"
+			(at 31.75 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 31.75 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 31.75 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(reference "MH1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 63.5 184.15 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "20258f80-4ae6-45cf-b68c-46db08e6e61f")
+		(property "Reference" "MH2"
+			(at 63.5 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M3 chassis GND"
+			(at 63.5 179.705 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_ISO7380_Pad"
+			(at 63.5 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 63.5 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 63.5 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(reference "MH2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 95.25 184.15 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "15bbcef4-dbac-4b45-a089-8212f57cdc2d")
+		(property "Reference" "MH3"
+			(at 95.25 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M3 chassis GND"
+			(at 95.25 179.705 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_ISO7380_Pad"
+			(at 95.25 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 95.25 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 95.25 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(reference "MH3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 127 184.15 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7a7ff155-d0c4-493b-a5d2-1ddee51d761b")
+		(property "Reference" "MH4"
+			(at 127 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M3 chassis GND"
+			(at 127 179.705 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_ISO7380_Pad"
+			(at 127 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 127 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 127 184.15 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "omnimotion"
+				(path "/3dfc5586-7f28-428b-ba5a-10e4b35298fd"
+					(reference "MH4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(embedded_fonts no)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
