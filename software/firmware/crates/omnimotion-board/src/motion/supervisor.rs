@@ -48,9 +48,11 @@ pub(crate) fn clear_latch() {
 
 pub struct FaultSupervisor {
     watchdog: stepper::Watchdog,
+    #[cfg_attr(feature = "virtual-hardware", allow(dead_code))]
     estop: Input<'static>,
     drv_en: Output<'static>,
     diag: [Input<'static>; AXES],
+    #[cfg_attr(feature = "virtual-hardware", allow(dead_code))]
     endstops: [Input<'static>; ENDSTOPS],
     bank: EndstopBank,
 }
@@ -77,8 +79,15 @@ impl FaultSupervisor {
 
     /// E-stop pole A idles low through the closed contact and rises when the
     /// button opens or the cable breaks.
+    #[cfg(not(feature = "virtual-hardware"))]
     pub fn estop_closed(&self) -> bool {
         self.estop.is_low()
+    }
+
+    /// There is no button on a board running virtual hardware.
+    #[cfg(feature = "virtual-hardware")]
+    pub fn estop_closed(&self) -> bool {
+        true
     }
 
     pub fn drivers_enabled(&self) -> bool {
@@ -119,10 +128,29 @@ impl FaultSupervisor {
 
     /// The six inputs as one bitmask, in the order `EndstopBank` expects. Each
     /// idles high through its pull-up.
+    #[cfg(not(feature = "virtual-hardware"))]
     pub(crate) fn port(&self) -> u8 {
         let mut port = 0;
         for (endstop, pin) in self.endstops.iter().enumerate() {
             if pin.is_high() {
+                port |= 1 << endstop;
+            }
+        }
+        port
+    }
+
+    /// The levels the installed machine model implies: each input is low while its endstop is
+    /// triggered, or high while it is, for a connector wired the other way round.
+    #[cfg(feature = "virtual-hardware")]
+    pub(crate) fn port(&self) -> u8 {
+        let triggered = crate::virtual_hardware::triggered();
+        let mut port = 0;
+        for endstop in 0..ENDSTOPS {
+            let active_low = self
+                .bank
+                .config(endstop)
+                .map_or(true, |config| config.active_low);
+            if (triggered & (1 << endstop) != 0) != active_low {
                 port |= 1 << endstop;
             }
         }

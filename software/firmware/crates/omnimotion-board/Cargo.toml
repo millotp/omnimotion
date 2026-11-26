@@ -28,6 +28,13 @@ esp-alloc = { version = "0.10.0", features = ["esp32s3"] }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 postcard = { version = "1.2", default-features = false, features = ["alloc"] }
 
+[features]
+# Replaces what a bare board lacks with a virtual machine, so firmware can run with nothing attached:
+# the TMC2209s answer from an emulator, VMOTOR reads 24 V, the e-stop is closed and the endstops come
+# from a model of the machine that the application installs (`virtual_hardware::install`). Never for a
+# board that drives real motors.
+virtual-hardware = []
+
 [dev-dependencies]
 esp-backtrace = { version = "0.19", default-features = false, features = ["esp32s3", "panic-handler", "println"] }
 esp-println = { version = "0.17", default-features = false, features = ["esp32s3", "jtag-serial"] }

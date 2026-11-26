@@ -119,6 +119,24 @@ homing modes), `coordinated` (all three axes), `cross_core_abort`,
 config also enables `build-std`, because the esp toolchain ships `rust-src`
 rather than a prebuilt `core` for Xtensa.
 
+### Virtual hardware
+
+An application can be tried on a board with nothing attached by building
+`omnimotion-board` with the `virtual-hardware` feature. The TMC2209s become
+`omnimotion::devices::tmc2209::emulator::TmcEmulator` (the drivers you pass as
+fitted answer, healthy and standing still), VMOTOR reads 24 V and the e-stop reads
+closed. The endstops come from a `virtual_hardware::Sensors` model that the
+application installs with `virtual_hardware::install`: it is given the step
+counters, which the step engine keeps whether or not a motor is connected, and
+returns the endstops that would be triggered there. With none installed no endstop
+ever triggers. STEP, DIR and ENN still toggle. The board self-check passes: the
+emulated drivers report the STEP and DIR levels the check drives (`virtual_hardware`
+records them and hands them to the emulator with `with_pins`), ENN inactive, their
+address on MS1 and MS2, and no fault. `virtual_hardware::hand` lets an application
+play the person who moves the machine by hand during a watch: it offsets the step
+counters the model sees and holds endstops triggered, without a step being taken.
+Never enable it for a board that drives real motors.
+
 ## Flash layout and stored data
 
 `partitions.csv` describes the 16 MB flash. The runner passes it to espflash,

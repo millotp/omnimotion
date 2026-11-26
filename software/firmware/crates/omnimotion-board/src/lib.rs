@@ -10,6 +10,8 @@ pub mod motion;
 pub mod net;
 pub mod pins;
 pub mod storage;
+#[cfg(feature = "virtual-hardware")]
+pub mod virtual_hardware;
 
 pub use board::{Board, Config, StartError, TmcBus, TmcDriver, TmcError};
 pub use boot::{boot, boot_on_second_core, Rtos};

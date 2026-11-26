@@ -223,6 +223,8 @@ pub(crate) struct Stepper {
 /// level it last wrote.
 pub(crate) struct HeldLines<'a> {
     _stepper: &'a mut Stepper,
+    #[cfg(feature = "virtual-hardware")]
+    axis: usize,
     step: u32,
     dir: u32,
     saved: u32,
@@ -233,6 +235,8 @@ impl HeldLines<'_> {
         let high = if step { self.step } else { 0 } | if dir { self.dir } else { 0 };
         set(high);
         clear((self.step | self.dir) & !high);
+        #[cfg(feature = "virtual-hardware")]
+        crate::virtual_hardware::set_lines(self.axis, step, dir);
     }
 }
 
@@ -241,6 +245,12 @@ impl Drop for HeldLines<'_> {
         let lines = self.step | self.dir;
         set(self.saved & lines);
         clear(lines & !self.saved);
+        #[cfg(feature = "virtual-hardware")]
+        crate::virtual_hardware::set_lines(
+            self.axis,
+            self.saved & self.step != 0,
+            self.saved & self.dir != 0,
+        );
     }
 }
 
@@ -401,6 +411,8 @@ impl Stepper {
         let saved = GPIO::regs().out().read().bits() & (step | dir);
         Some(HeldLines {
             _stepper: self,
+            #[cfg(feature = "virtual-hardware")]
+            axis,
             step,
             dir,
             saved,

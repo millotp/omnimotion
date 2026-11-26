@@ -63,7 +63,9 @@ type VmonPin = AdcPin<GPIO1<'static>, ADC1<'static>, AdcCalCurve<ADC1<'static>>>
 
 /// The VMOTOR monitor: a 100 k / 10 k divider into ADC1_CH0.
 pub struct Vmon {
+    #[cfg_attr(feature = "virtual-hardware", allow(dead_code))]
     adc: Adc<'static, ADC1<'static>, esp_hal::Blocking>,
+    #[cfg_attr(feature = "virtual-hardware", allow(dead_code))]
     pin: VmonPin,
 }
 
@@ -80,8 +82,17 @@ impl Vmon {
         }
     }
 
+    #[cfg(not(feature = "virtual-hardware"))]
     pub fn read(&mut self) -> Rails {
         Rails::from_pin_mv(i32::from(self.adc.read_blocking(&mut self.pin)))
+    }
+
+    /// A 24 V supply, whatever the pin floats at.
+    #[cfg(feature = "virtual-hardware")]
+    pub fn read(&mut self) -> Rails {
+        Rails {
+            motor_mv: crate::virtual_hardware::MOTOR_MV,
+        }
     }
 }
 

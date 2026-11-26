@@ -1,5 +1,6 @@
 pub mod bus;
 pub mod config;
+pub mod emulator;
 pub mod stallguard;
 
 pub use ::tmc2209::data::MicroStepResolution;

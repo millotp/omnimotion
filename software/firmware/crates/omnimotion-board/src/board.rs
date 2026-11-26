@@ -1,6 +1,7 @@
 use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig, Pull};
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 use esp_hal::time::Rate;
+#[cfg(not(feature = "virtual-hardware"))]
 use esp_hal::uart::{Config as UartConfig, Uart};
 use esp_hal::Async;
 use omnimotion::devices::power::PowerSource;
@@ -12,9 +13,15 @@ use crate::motion::supervisor::FaultSupervisor;
 use crate::motion::{stepper, Motion};
 use crate::pins::{self, BoardPins};
 
-pub type TmcBus = Bus<Uart<'static, Async>, embassy_time::Delay>;
-pub type TmcDriver<'a> = Driver<'a, Uart<'static, Async>, embassy_time::Delay>;
-pub type TmcError = <Uart<'static, Async> as embedded_io_async::ErrorType>::Error;
+#[cfg(not(feature = "virtual-hardware"))]
+type TmcSerial = Uart<'static, Async>;
+/// With nothing attached, the drivers are an emulator behind the same bus.
+#[cfg(feature = "virtual-hardware")]
+type TmcSerial = omnimotion::devices::tmc2209::emulator::TmcEmulator;
+
+pub type TmcBus = Bus<TmcSerial, embassy_time::Delay>;
+pub type TmcDriver<'a> = Driver<'a, TmcSerial, embassy_time::Delay>;
+pub type TmcError = <TmcSerial as embedded_io_async::ErrorType>::Error;
 
 /// Everything `Board::start` needs. `Default` is a 200-step motor on 16
 /// microsteps driving a 40 mm/rev belt, with no endstops fitted.
@@ -184,6 +191,7 @@ impl Board {
         .with_scl(peripherals.scl)
         .into_async();
 
+        #[cfg(not(feature = "virtual-hardware"))]
         let uart = Uart::new(
             peripherals.uart1,
             UartConfig::default().with_baudrate(pins::TMC_BAUD),
@@ -192,6 +200,10 @@ impl Board {
         .with_tx(peripherals.tx)
         .with_rx(peripherals.rx)
         .into_async();
+        // M0 and M1 are fitted; the third socket is empty, as on the machine.
+        #[cfg(feature = "virtual-hardware")]
+        let uart = omnimotion::devices::tmc2209::emulator::TmcEmulator::new([true, true, false])
+            .with_pins(crate::virtual_hardware::pins);
 
         let oled = inventory::find_oled(&mut i2c).await;
         let mut vmon = Vmon::new(peripherals.adc1, peripherals.vmon);
