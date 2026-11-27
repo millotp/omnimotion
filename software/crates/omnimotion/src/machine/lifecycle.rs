@@ -84,23 +84,6 @@ impl Lifecycle {
         Ok(())
     }
 
-    /// While paused, takes the job back to `completed` operations, so the
-    /// ones after it run again on resume.
-    pub fn rewind(&mut self, completed: u32) -> Result<(), LifecycleError> {
-        if self.state != LifecycleState::Paused {
-            return Err(LifecycleError::InvalidTransition);
-        }
-        let progress = self
-            .progress
-            .as_mut()
-            .ok_or(LifecycleError::InvalidProgress)?;
-        if completed > progress.completed {
-            return Err(LifecycleError::InvalidProgress);
-        }
-        progress.completed = completed;
-        Ok(())
-    }
-
     pub fn begin_operation(&mut self) -> Result<u32, LifecycleError> {
         if self.state != LifecycleState::Running || !self.safe_boundary {
             return Err(LifecycleError::InvalidTransition);

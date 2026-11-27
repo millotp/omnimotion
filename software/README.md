@@ -454,8 +454,7 @@ requests the abort and waits for it), then `pause_interrupted` or
 converts into `CommandError::InvalidState`. Stop and explicit fault recovery
 discard resumable progress; a fault can never be resumed as though it were a
 pause. `restore(progress)` starts a job from a saved checkpoint, already
-`completed` operations in; `rewind(completed)` takes a paused job back, so the
-operations after it run again.
+`completed` operations in.
 
 ## Faults
 

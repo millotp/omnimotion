@@ -193,23 +193,6 @@ fn a_restored_job_runs_from_its_checkpoint() {
 }
 
 #[test]
-fn a_paused_job_rewinds_but_never_forward() {
-    let mut job = Lifecycle::new();
-    job.start(4).unwrap();
-    for _ in 0..3 {
-        job.begin_operation().unwrap();
-        job.complete_operation().unwrap();
-    }
-    assert_eq!(job.rewind(1), Err(LifecycleError::InvalidTransition));
-    job.request_pause().unwrap();
-    job.pause().unwrap();
-    assert_eq!(job.rewind(4), Err(LifecycleError::InvalidProgress));
-    job.rewind(1).unwrap();
-    job.resume().unwrap();
-    assert_eq!(job.begin_operation(), Ok(1));
-}
-
-#[test]
 fn invalid_transitions_are_rejected() {
     let mut job = Lifecycle::new();
     assert_eq!(job.start(0), Err(LifecycleError::InvalidProgress));

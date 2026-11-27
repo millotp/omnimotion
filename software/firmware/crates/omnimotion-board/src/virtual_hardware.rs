@@ -59,7 +59,7 @@ static HAND_STEPS: [AtomicI32; AXES] = [const { AtomicI32::new(0) }; AXES];
 static HAND_HELD: AtomicU8 = AtomicU8::new(0);
 
 /// Moves each axis `offsets` steps from where the step engine has it, as a hand on the wheel or the slide
-/// would, and holds the endstops in `held` triggered, as a hand on the dancer would. `hand([0; AXES], 0)`
+/// would, and holds the endstops in `held` triggered, as a hand holding a sensor's flag would. `hand([0; AXES], 0)`
 /// lets go.
 pub fn hand(offsets: [i32; AXES], held: u8) {
     for (counter, offset) in HAND_STEPS.iter().zip(offsets) {
