@@ -1,0 +1,10 @@
+[package]
+name = "esp-backtrace-sim"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "esp_backtrace"
+
+[dependencies]

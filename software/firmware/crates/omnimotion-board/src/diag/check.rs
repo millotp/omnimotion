@@ -9,6 +9,7 @@ use omnimotion::devices::tmc2209::{Driver, ADDRESSES, VERSION};
 use omnimotion::AXES;
 
 use crate::diag::inventory;
+use crate::motion::supervisor::endstop_levels;
 use crate::Board;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,7 +34,7 @@ impl Board {
             return Err(CheckError::DriversEnabled);
         }
 
-        let rails = self.vmon.read();
+        let rails = self.faults.rails();
         let mut drivers = [DriverResult::NoMotorSupply; AXES];
         if rails.source() != PowerSource::UsbOnly {
             for (axis, result) in drivers.iter_mut().enumerate() {
@@ -51,7 +52,7 @@ impl Board {
             estop_closed: self.faults.estop_closed(),
             oled: inventory::find_oled(&mut self.i2c).await,
             endstop_config,
-            endstops: read_endstops(&endstop_config, self.faults.port()),
+            endstops: read_endstops(&endstop_config, endstop_levels()),
             drivers,
         })
     }

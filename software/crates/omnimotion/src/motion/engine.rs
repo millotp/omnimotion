@@ -1,6 +1,10 @@
 use crate::motion::planner::Segment;
 use crate::{AxisMask, AXES};
 
+/// The board's step ISR rate. An axis can step at most once per tick, so this
+/// is also the fastest step rate of any move.
+pub const TICK_HZ: u32 = 40_000;
+
 /// What the pins should do this tick.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Tick {

@@ -3,6 +3,7 @@
 pub mod devices;
 pub mod machine;
 pub mod motion;
+pub mod net;
 pub mod update;
 
 /// Axes M0-M2. All three TMC2209 channels share one UART, addressed by their
@@ -20,7 +21,7 @@ pub use devices::endstop::{EndstopBank, EndstopConfig, EndstopKind, EndstopRole,
 pub use devices::power::{PowerSource, Rails, Volts};
 pub use machine::control::{
     CommandCompletion, CommandError, CommandRequest, ControlClient, ControlPlane, MachineCommand,
-    MachineControl, RequestId, StandardCommand, StatusSnapshot, SubmitError,
+    MachineControl, RequestId, StandardCommand, StatusSnapshot, SubmitError, KEPT_COMPLETIONS,
 };
 pub use machine::lifecycle::{JobProgress, Lifecycle, LifecycleError, LifecycleState};
 pub use machine::persistence::{
@@ -29,7 +30,7 @@ pub use machine::persistence::{
     WriteRefusal,
 };
 pub use motion::abort::{generation_is_acknowledged, AbortGenerations, AbortState, AbortTicket};
-pub use motion::engine::{EngineError, StepEngine, Tick};
+pub use motion::engine::{EngineError, StepEngine, Tick, TICK_HZ};
 pub use motion::planner::{nco_increment, MoveStart, PlanError, Planner, Segment};
 pub use motion::profile::{Limits, LimitsError, Profile, Trapezoid};
 pub use motion::rotary::{RotaryError, RotaryPeriod};

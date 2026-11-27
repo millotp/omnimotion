@@ -2,6 +2,8 @@
 
 These govern every file in `software/`.
 
+- **The library serves its applications.** Change any API freely: no legacy, migration or compatibility code. When something is hard to do from an application (a workaround, an unsafe pin grab, a copied constant, a missing API), change Omnimotion instead, and move generic code an application had to write into it.
+
 - **Readable first.** Plain, obvious code over clever code. If a reader has to reconstruct an argument to follow a function, the function is wrong.
 - **Minimalist.** Nothing redundant, nothing extravagant. No abstraction without a second caller, no configuration knob nobody asked for, no speculative generality.
 - **Files stay well under 1000 lines.** In practice most land between 100 and 300. A file growing past that is a signal to split by concern, not to keep appending.

@@ -14,7 +14,7 @@
 use esp_backtrace as _;
 use esp_println::println;
 use omnimotion_board::diag::inventory::DriverPresence;
-use omnimotion_board::motion::homing::{home, Homed, HomingConfig, HomingSensor};
+use omnimotion_board::motion::homing::{Homed, HomingConfig, HomingSensor};
 use omnimotion_board::{
     steps_per_mm, AxisConfig, Board, BoardPins, Config, DriverConfig, EndstopConfig,
     MicroStepResolution, AXES,
@@ -47,13 +47,12 @@ fn config() -> Config {
             EndstopConfig::SWITCH,           // E4
             EndstopConfig::SWITCH,           // E5
         ],
-        driver: DriverConfig {
+        drivers: [DriverConfig {
             run_current_ma: RUN_CURRENT_MA,
             hold_current_ma: RUN_CURRENT_MA / 2.0,
             microsteps: MicroStepResolution::from_microsteps(MICROSTEPS),
             ..DriverConfig::default()
-        },
-        ..Config::default()
+        }; AXES],
     }
 }
 
@@ -84,18 +83,21 @@ async fn board_task(pins: BoardPins) {
         rate: 20.0,
         accel: 200.0,
         backoff: 3.0,
+        repeat_slowly: false,
     };
 
-    home_axis(&mut board, 0, &pass, &config.driver).await;
+    home_axis(&mut board, 0, &pass).await;
 
     if board.inventory.drivers[1] == DriverPresence::Responding {
         let switched = HomingConfig {
             // No driver reconfiguration and no settle wait, so this pass runs at
             // the axis's normal current and starts immediately.
             sensor: HomingSensor::Endstop { endstop: M1_HOME },
+            // A switch trips a little further on when approached fast.
+            repeat_slowly: true,
             ..pass
         };
-        home_axis(&mut board, 1, &switched, &config.driver).await;
+        home_axis(&mut board, 1, &switched).await;
     } else {
         println!("M1 absent, skipping the switch-homed axis");
     }
@@ -103,28 +105,9 @@ async fn board_task(pins: BoardPins) {
     board.faults.disable_drivers();
 }
 
-async fn home_axis(
-    board: &mut Board,
-    axis: usize,
-    config: &HomingConfig,
-    run_config: &DriverConfig,
-) {
-    // Built straight from the field rather than `board.driver`, which would
-    // borrow the whole board and lock out `motion` and `faults` below.
-    let address = omnimotion_board::tmc2209::ADDRESSES[axis];
-    let mut driver = omnimotion_board::tmc2209::Driver::new(&mut board.tmc, address);
-    let outcome = home(
-        &mut board.motion,
-        &mut driver,
-        &mut board.faults,
-        axis,
-        config,
-        run_config,
-    )
-    .await;
-
-    match outcome {
-        Ok(Homed::Found) => println!(
+async fn home_axis(board: &mut Board, axis: usize, config: &HomingConfig) {
+    match board.home(axis, config).await {
+        Ok(Homed::Found { .. }) => println!(
             "M{axis} homed, now at {:?} mm",
             board.motion.position_units()
         ),

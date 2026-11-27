@@ -6,6 +6,7 @@
 //! within its trial gives its slot back, so a bad update costs a reboot rather
 //! than a USB cable.
 
+pub mod http;
 mod ota;
 
 use core::fmt::Write as _;
@@ -15,14 +16,13 @@ use embassy_futures::select::{select, Either};
 use embassy_net::tcp::TcpSocket;
 use embassy_net::{DhcpConfig, Runner, Stack, StackResources};
 use embassy_time::{Duration, Timer};
-use embedded_io_async::Write;
 use esp_hal::delay::Delay;
 use esp_hal::peripherals::WIFI;
 use esp_hal::rng::Rng;
 use esp_hal::system::software_reset;
 use esp_radio::wifi::sta::StationConfig;
 use esp_radio::wifi::{Config as WifiConfig, ControllerConfig, Interface, WifiController};
-use heapless::{String, Vec};
+use heapless::String;
 use omnimotion::update::ota::{parse_upload, ImageError, Upload};
 use static_cell::StaticCell;
 
@@ -162,30 +162,36 @@ async fn updates(stack: Stack<'static>, ota: &'static mut Ota, boot: Boot) {
 
 /// True once an image is installed and the board should restart so it is read.
 async fn serve(socket: &mut TcpSocket<'_>, ota: &mut Ota) -> bool {
-    let outcome = match read_head(socket).await {
-        Some(head) => match parse_upload(&head, TOKEN) {
-            Ok(Upload::App(length)) => match receive(socket, ota, length).await {
-                Ok(()) => Ok("installed, rebooting"),
-                Err(error) => Err(app_failure(error)),
-            },
-            Ok(Upload::Web(length)) => match receive_web(socket, ota, length).await {
-                Ok(()) => Ok("web partition updated, rebooting"),
-                Err(error) => Err(web_failure(error)),
-            },
-            Err(error) => Err((error.status(), error.message())),
-        },
-        None => Err((400, "malformed request")),
+    let mut buffer = [0; HEAD_LIMIT];
+    let outcome = match http::read_head(socket, &mut buffer).await {
+        Ok((end, filled)) => {
+            let early = &buffer[end..filled];
+            match core::str::from_utf8(&buffer[..end]).map(|head| parse_upload(head, TOKEN)) {
+                Ok(Ok(Upload::App(length))) => match receive(socket, ota, length, early).await {
+                    Ok(()) => Ok("installed, rebooting"),
+                    Err(error) => Err(app_failure(error)),
+                },
+                Ok(Ok(Upload::Web(length))) => {
+                    match receive_web(socket, ota, length, early).await {
+                        Ok(()) => Ok("web partition updated, rebooting"),
+                        Err(error) => Err(web_failure(error)),
+                    }
+                }
+                Ok(Err(error)) => Err((error.status(), error.message())),
+                Err(_) => Err((400, "malformed request")),
+            }
+        }
+        Err(http::ReadError::TooLarge) => Err((431, "request headers too large")),
+        Err(_) => Err((400, "malformed request")),
     };
-    match outcome {
-        Ok(message) => {
-            respond(socket, 200, message).await;
-            true
-        }
-        Err((status, message)) => {
-            respond(socket, status, message).await;
-            false
-        }
-    }
+    let (status, message) = match outcome {
+        Ok(message) => (200, message),
+        Err(failure) => failure,
+    };
+    let mut body = String::<128>::new();
+    let _ = writeln!(body, "{message}");
+    let _ = http::respond(socket, status, "text/plain", body.as_bytes()).await;
+    status == 200
 }
 
 fn app_failure(error: OtaError) -> (u16, &'static str) {
@@ -212,10 +218,19 @@ fn web_failure(error: WebError) -> (u16, &'static str) {
     }
 }
 
-async fn receive(socket: &mut TcpSocket<'_>, ota: &mut Ota, length: usize) -> Result<(), OtaError> {
+async fn receive(
+    socket: &mut TcpSocket<'_>,
+    ota: &mut Ota,
+    length: usize,
+    early: &[u8],
+) -> Result<(), OtaError> {
     let mut update = ota.begin(length)?;
+    let early = &early[..early.len().min(length)];
+    if !early.is_empty() {
+        update.write(early)?;
+    }
     let mut buffer = [0; 2_048];
-    let mut remaining = length;
+    let mut remaining = length - early.len();
     while remaining > 0 {
         let wanted = remaining.min(buffer.len());
         let read = socket
@@ -235,10 +250,15 @@ async fn receive_web(
     socket: &mut TcpSocket<'_>,
     ota: &mut Ota,
     length: usize,
+    early: &[u8],
 ) -> Result<(), WebError> {
     let mut update = ota.begin_web(length)?;
+    let early = &early[..early.len().min(length)];
+    if !early.is_empty() {
+        update.write(early)?;
+    }
     let mut buffer = [0; 2_048];
-    let mut remaining = length;
+    let mut remaining = length - early.len();
     while remaining > 0 {
         let wanted = remaining.min(buffer.len());
         let read = socket
@@ -252,33 +272,6 @@ async fn receive_web(
         remaining -= read;
     }
     update.finish()
-}
-
-/// The request line and headers, without the blank line that ends them.
-async fn read_head(socket: &mut TcpSocket<'_>) -> Option<String<HEAD_LIMIT>> {
-    let mut head = Vec::<u8, HEAD_LIMIT>::new();
-    let mut byte = [0];
-    while !head.ends_with(b"\r\n\r\n") {
-        if socket.read(&mut byte).await.ok()? != 1 {
-            return None;
-        }
-        head.push(byte[0]).ok()?;
-    }
-    head.truncate(head.len() - 4);
-    String::from_utf8(head).ok()
-}
-
-async fn respond(socket: &mut TcpSocket<'_>, status: u16, message: &str) {
-    let mut head = String::<128>::new();
-    let _ = write!(
-        head,
-        "HTTP/1.1 {status} \r\nContent-Type: text/plain\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
-        message.len() + 1
-    );
-    let _ = socket.write_all(head.as_bytes()).await;
-    let _ = socket.write_all(message.as_bytes()).await;
-    let _ = socket.write_all(b"\n").await;
-    let _ = socket.flush().await;
 }
 
 async fn brief_lease() -> Lease {

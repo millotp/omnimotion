@@ -1,6 +1,8 @@
 //! The pure half of over-the-air updates: parsing the upload request and
 //! checking that the body is an ESP32-S3 app image before anything is erased.
 
+use crate::net::http::{parse_head, HeadError};
+
 /// ESP-IDF app images start with this byte.
 pub const IMAGE_MAGIC: u8 = 0xE9;
 /// `chip_id` in the extended image header, which espflash fills in.
@@ -71,60 +73,28 @@ impl RequestError {
     }
 }
 
-/// Parses the head of a `POST /ota` or `POST /web` request, without the blank
-/// line that ends it, and returns the target with the body length. The image is
-/// streamed straight to flash, so chunked bodies are refused: the length has to
-/// be known before the first erase.
+/// Parses the head of a `POST /ota` or `POST /web` request and returns the
+/// target with the body length. The image is streamed straight to flash, so
+/// chunked bodies are refused: the length has to be known before the first
+/// erase.
 pub fn parse_upload(head: &str, token: &str) -> Result<Upload, RequestError> {
-    let mut lines = head.split("\r\n");
-    let mut request_line = lines
-        .next()
-        .ok_or(RequestError::Malformed)?
-        .split_ascii_whitespace();
-    let method = request_line.next().ok_or(RequestError::Malformed)?;
-    let path = request_line.next().ok_or(RequestError::Malformed)?;
-    let version = request_line.next().ok_or(RequestError::Malformed)?;
-    if request_line.next().is_some() || !matches!(version, "HTTP/1.0" | "HTTP/1.1") {
-        return Err(RequestError::Malformed);
-    }
-
-    let mut length = None;
-    let mut authorized = false;
-    for line in lines {
-        let (name, value) = line.split_once(':').ok_or(RequestError::Malformed)?;
-        let value = value.trim();
-        if name.eq_ignore_ascii_case("content-length") {
-            if length.is_some() {
-                return Err(RequestError::Malformed);
-            }
-            length = Some(value.parse().map_err(|_| RequestError::Malformed)?);
-        } else if name.eq_ignore_ascii_case("transfer-encoding") {
-            return Err(RequestError::LengthRequired);
-        } else if name.eq_ignore_ascii_case("x-api-key") {
-            authorized = !token.is_empty() && constant_time_equal(value, token);
-        }
-    }
-
-    let target = match path {
+    let head = parse_head(head.as_bytes(), token.as_bytes()).map_err(|error| match error {
+        HeadError::Malformed => RequestError::Malformed,
+        HeadError::LengthRequired => RequestError::LengthRequired,
+    })?;
+    let target = match head.path {
         UPLOAD_PATH => Upload::App,
         WEB_UPLOAD_PATH => Upload::Web,
         _ => return Err(RequestError::NotFound),
     };
-    if method != "POST" {
+    if head.method != "POST" {
         return Err(RequestError::MethodNotAllowed);
     }
-    if !authorized {
+    if !head.authorized {
         return Err(RequestError::Unauthorized);
     }
-    let length = length.ok_or(RequestError::LengthRequired)?;
+    let length = head
+        .body_length()
+        .map_err(|_| RequestError::LengthRequired)?;
     Ok(target(length))
-}
-
-/// Takes as long for a near miss as for a wild guess.
-fn constant_time_equal(a: &str, b: &str) -> bool {
-    a.len() == b.len()
-        && a.bytes()
-            .zip(b.bytes())
-            .fold(0, |difference, (x, y)| difference | (x ^ y))
-            == 0
 }

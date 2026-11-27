@@ -29,12 +29,12 @@ fn config() -> Config {
             max_acceleration: 600.0,
             min_velocity: 2.0,
         }; AXES],
-        driver: DriverConfig {
+        drivers: [DriverConfig {
             run_current_ma: 700.0,
             hold_current_ma: 350.0,
             microsteps: MicroStepResolution::from_microsteps(MICROSTEPS),
             ..DriverConfig::default()
-        },
+        }; AXES],
         ..Config::default()
     }
 }

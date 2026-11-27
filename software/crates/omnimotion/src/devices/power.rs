@@ -6,8 +6,8 @@ const MOTOR_RATIO: i32 = 11;
 const MOTOR_PRESENT_MV: i32 = 1_000;
 
 /// 12-24 V board. The ceiling leaves headroom below the TMC2209's 32 V limit.
-const MOTOR_MIN_MV: i32 = 11_000;
-const MOTOR_MAX_MV: i32 = 26_000;
+pub const MOTOR_MIN_MV: i32 = 11_000;
+pub const MOTOR_MAX_MV: i32 = 26_000;
 
 /// Whether the board is running off bulk supply or USB alone. Inferred from
 /// VMOTOR because the TPS2116 gives the buck priority, so a live VMOTOR means

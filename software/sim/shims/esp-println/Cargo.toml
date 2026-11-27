@@ -1,0 +1,11 @@
+[package]
+name = "esp-println-sim"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "esp_println"
+
+[dependencies]
+omnimotion-sim.workspace = true

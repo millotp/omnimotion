@@ -37,13 +37,12 @@ fn config() -> Config {
     Config {
         axes: [linear, linear, rotary],
         endstops: [EndstopConfig::SWITCH; ENDSTOPS],
-        driver: DriverConfig {
+        drivers: [DriverConfig {
             run_current_ma: 700.0,
             hold_current_ma: 350.0,
             microsteps: MicroStepResolution::from_microsteps(MICROSTEPS),
             ..DriverConfig::default()
-        },
-        ..Config::default()
+        }; AXES],
     }
 }
 

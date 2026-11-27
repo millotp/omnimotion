@@ -1,0 +1,12 @@
+[package]
+name = "esp-rtos-sim"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "esp_rtos"
+
+[dependencies]
+omnimotion-sim.workspace = true
+embassy-executor.workspace = true

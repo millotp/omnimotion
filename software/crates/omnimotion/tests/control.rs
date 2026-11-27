@@ -1,7 +1,7 @@
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use omnimotion::{
     AbortState, CommandCompletion, CommandError, ControlPlane, JobProgress, LifecycleState,
-    MachineCommand, RequestId, StandardCommand, StatusSnapshot, SubmitError,
+    MachineCommand, RequestId, StandardCommand, StatusSnapshot, SubmitError, KEPT_COMPLETIONS,
 };
 
 type TestPlane = ControlPlane<NoopRawMutex, u16, 2>;
@@ -26,7 +26,7 @@ fn command_capacity_and_request_ids_are_explicit() {
 }
 
 #[test]
-fn completions_remain_bounded_and_distinguish_old_requests() {
+fn completions_are_collected_by_request_id_once() {
     let plane = TestPlane::new(StatusSnapshot::default());
     let (client, machine) = plane.split();
     let old = client
@@ -38,23 +38,42 @@ fn completions_remain_bounded_and_distinguish_old_requests() {
     machine.try_next();
     machine.try_next();
 
-    pollster::block_on(machine.complete(CommandCompletion {
+    machine.complete(CommandCompletion {
         id: old,
         result: Ok(()),
-    }));
-    pollster::block_on(machine.complete(CommandCompletion {
+        reason: None,
+    });
+    let refused = CommandCompletion {
         id: current,
         result: Err(CommandError::InvalidState),
-    }));
+        reason: Some("the guide may be outside the nails"),
+    };
+    machine.complete(refused);
 
-    assert_eq!(client.try_completion().unwrap().id, old);
-    assert_eq!(
-        client.try_completion(),
-        Some(CommandCompletion {
-            id: current,
-            result: Err(CommandError::InvalidState),
+    assert_eq!(client.take_completion(current), Some(refused));
+    assert_eq!(client.take_completion(current), None);
+    assert_eq!(client.take_completion(old).unwrap().result, Ok(()));
+}
+
+#[test]
+fn the_oldest_completion_gives_way() {
+    let plane = TestPlane::new(StatusSnapshot::default());
+    let (client, machine) = plane.split();
+    let complete = |id| {
+        machine.complete(CommandCompletion {
+            id: RequestId(id),
+            result: Ok(()),
+            reason: None,
         })
-    );
+    };
+    for id in 0..=KEPT_COMPLETIONS as u32 {
+        complete(id);
+    }
+    assert_eq!(client.take_completion(RequestId(0)), None);
+    assert!(client.take_completion(RequestId(1)).is_some());
+    assert!(client
+        .take_completion(RequestId(KEPT_COMPLETIONS as u32))
+        .is_some());
 }
 
 #[test]
@@ -64,6 +83,7 @@ fn status_is_published_as_one_coherent_value() {
     let snapshot = StatusSnapshot {
         lifecycle: LifecycleState::Running,
         raw_position: [10, -20, 30],
+        origin: [5, 0, 0],
         available_axes: 0b011,
         drivers_enabled: true,
         active_request: Some(RequestId(42)),

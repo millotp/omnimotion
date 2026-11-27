@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = ["crates/omnimotion"]
-exclude = ["firmware"]
+exclude = ["firmware", "sim"]
 
 [workspace.package]
 version = "0.1.0"

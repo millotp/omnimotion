@@ -12,10 +12,11 @@ use esp_hal::timer::timg::{TimerGroup, Wdt};
 use esp_hal::timer::Timer as _;
 use esp_hal::{handler, ram};
 use heapless::spsc::{Consumer, Producer, Queue};
-use omnimotion::{AbortGenerations, AbortState, AbortTicket, AxisMask, Segment, StepEngine, AXES};
+use omnimotion::{
+    AbortGenerations, AbortState, AbortTicket, AxisMask, Segment, StepEngine, AXES, TICK_HZ,
+};
 use static_cell::StaticCell;
 
-pub const DEFAULT_TICK_HZ: u32 = 40_000;
 pub(crate) type Watchdog = Wdt<TIMG0<'static>>;
 
 const QUEUE_DEPTH: usize = 16;
@@ -213,7 +214,6 @@ static mut INTERRUPT: Option<Interrupt> = None;
 /// Feeds segments to the step ISR.
 pub(crate) struct Stepper {
     segments: Producer<'static, QueuedSegment>,
-    tick_hz: u32,
     step_bits: [u32; AXES],
     dir_bits: [u32; AXES],
 }
@@ -259,7 +259,6 @@ pub(crate) fn start(
     timg0: TIMG0<'static>,
     step: [AnyPin<'static>; AXES],
     dir: [AnyPin<'static>; AXES],
-    tick_hz: u32,
 ) -> (Stepper, Watchdog) {
     assert!(
         !STARTED.swap(true, Ordering::SeqCst),
@@ -269,16 +268,15 @@ pub(crate) fn start(
     static QUEUE: StaticCell<Queue<QueuedSegment, QUEUE_DEPTH>> = StaticCell::new();
     let (producer, consumer) = QUEUE.init(Queue::new()).split();
 
-    assert!((1..=1_000_000).contains(&tick_hz), "unsupported tick rate");
-    let period_us = 1_000_000 / tick_hz;
-    let realized_tick_hz = 1_000_000 / period_us;
+    const PERIOD_US: u32 = 1_000_000 / TICK_HZ;
+    const _: () = assert!(PERIOD_US * TICK_HZ == 1_000_000, "TIMG0 ticks whole microseconds");
 
     let timers = TimerGroup::new(timg0);
     let timer = timers.timer0;
     let watchdog = timers.wdt;
     timer.set_interrupt_handler(on_tick);
     timer
-        .load_value(Duration::from_micros(period_us as u64))
+        .load_value(Duration::from_micros(PERIOD_US as u64))
         .expect("tick rate out of range for TIMG0");
     timer.enable_auto_reload(true);
 
@@ -303,7 +301,6 @@ pub(crate) fn start(
     (
         Stepper {
             segments: producer,
-            tick_hz: realized_tick_hz,
             step_bits,
             dir_bits,
         },
@@ -370,10 +367,6 @@ pub(crate) fn engine_fault() -> bool {
 }
 
 impl Stepper {
-    pub(crate) fn tick_hz(&self) -> u32 {
-        self.tick_hz
-    }
-
     pub(crate) fn clear_fault(&mut self) -> bool {
         if !self.drained() || aborting() {
             return false;

@@ -73,6 +73,22 @@ impl EndstopConfig {
     }
 }
 
+/// The fitted endstops that `inputs` (bit n is the level of En) read as
+/// triggered, undebounced.
+pub fn triggered(config: &[EndstopConfig; ENDSTOPS], inputs: u8) -> u8 {
+    let mut mask = 0;
+    for (endstop, config) in config.iter().enumerate() {
+        if config.kind == EndstopKind::Unused {
+            continue;
+        }
+        let low = inputs & (1 << endstop) == 0;
+        if low == config.active_low {
+            mask |= 1 << endstop;
+        }
+    }
+    mask
+}
+
 /// Debounces the six endstop inputs against their configured sensor types.
 pub struct EndstopBank {
     config: [EndstopConfig; ENDSTOPS],
@@ -104,17 +120,7 @@ impl EndstopBank {
     }
 
     pub fn triggered_now(&self, inputs: u8) -> u8 {
-        let mut mask = 0;
-        for (endstop, config) in self.config.iter().enumerate() {
-            if config.kind == EndstopKind::Unused {
-                continue;
-            }
-            let low = inputs & (1 << endstop) == 0;
-            if low == config.active_low {
-                mask |= 1 << endstop;
-            }
-        }
-        mask
+        triggered(&self.config, inputs)
     }
 
     /// Feeds one raw sample of the six inputs and returns the endstops that

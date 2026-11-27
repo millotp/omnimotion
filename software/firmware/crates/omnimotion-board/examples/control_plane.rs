@@ -43,7 +43,7 @@ fn main() -> ! {
     ] {
         let id = client.submit(command).expect("command queue has room");
         loop {
-            if let Some(completion) = client.try_completion() {
+            if let Some(completion) = client.take_completion(id) {
                 println!("request {:?}, completion {:?}", id, completion);
                 break;
             }
@@ -136,10 +136,11 @@ async fn board_task(pins: BoardPins, machine: BoardMachineControl<'static, (), D
                 }
                 Err(_) => Err(CommandError::InvalidState),
             },
-            MachineCommand::Standard(StandardCommand::EnableDrivers) => {
-                board.faults.enable_drivers();
-                Ok(())
-            }
+            MachineCommand::Standard(StandardCommand::EnableDrivers) => board
+                .enable()
+                .await
+                .map(|_| ())
+                .map_err(|_| CommandError::InvalidState),
             MachineCommand::Standard(StandardCommand::DisableDrivers) => {
                 board.faults.disable_drivers();
                 Ok(())
@@ -161,12 +162,11 @@ async fn board_task(pins: BoardPins, machine: BoardMachineControl<'static, (), D
                 Err(CommandError::FaultLatched)
             }
         };
-        machine
-            .complete(CommandCompletion {
-                id: request.id,
-                result,
-            })
-            .await;
+        machine.complete(CommandCompletion {
+            id: request.id,
+            result,
+            reason: None,
+        });
         machine.publish(snapshot(
             &board,
             lifecycle.state(),

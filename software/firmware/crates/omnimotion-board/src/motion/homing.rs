@@ -3,13 +3,15 @@ use core::cell::Cell;
 use embassy_futures::select::{select, Either};
 use embassy_time::{Duration, Timer};
 use omnimotion::devices::endstop::{EndstopKind, EndstopRole};
-use omnimotion::devices::tmc2209::{tstep_for_rate, DriverConfig, Error};
+use omnimotion::devices::tmc2209::{
+    tstep_for_rate, Driver, DriverConfig, DriverStatus, Error, ADDRESSES,
+};
 use omnimotion::{Limits, AXES};
 
 use crate::motion::stepper;
 use crate::motion::supervisor::{Fault, FaultSupervisor, HomingTrigger};
 use crate::motion::{Motion, MotionError, Outcome};
-use crate::{TmcDriver, TmcError};
+use crate::{Board, TmcDriver, TmcError};
 
 /// The driver's stall flag may still be set from the previous move, so nothing
 /// may move for this long before a StallGuard pass starts.
@@ -44,14 +46,34 @@ pub struct HomingConfig {
     /// Distance to back off the stop, opposite the travel direction. The axis
     /// zeroes here, not on the stop.
     pub backoff: f32,
+    /// Once found, run `slow_pass` too, for an edge that repeats better than a
+    /// fast approach gives.
+    pub repeat_slowly: bool,
+}
+
+impl HomingConfig {
+    /// From the zero this pass leaves, back to the stop at a quarter of the
+    /// rate over twice the backoff, zeroing again.
+    pub fn slow_pass(&self) -> Self {
+        Self {
+            travel: 2.0 * self.backoff * self.travel.signum(),
+            rate: self.rate / 4.0,
+            repeat_slowly: false,
+            ..*self
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Homed {
     /// Reached the stop and the axis is now zeroed.
-    Found,
+    Found {
+        /// How far the zero moved, in steps: the new origin minus the old.
+        /// Meaningless for an axis not homed since boot.
+        shift: i64,
+    },
     /// Ran the whole travel budget without the sensor triggering. The outputs
-    /// are left disabled; `faults.enable_drivers()` turns them back on.
+    /// are left disabled; `Board::enable` turns them back on.
     NotFound,
 }
 
@@ -60,7 +82,8 @@ pub enum HomingError {
     Driver(Error<TmcError>),
     Motion(MotionError),
     PreassertedDiag,
-    /// Began sitting on its reference. Nothing moved and no fault was latched.
+    /// Still on its reference after stepping twice the backoff off it. No
+    /// fault was latched.
     PreassertedEndstop,
     DriverFault,
     Cleanup,
@@ -89,7 +112,7 @@ async fn fail_safe(
     faults: &mut FaultSupervisor,
     fault: Fault,
     error: HomingError,
-) -> Result<Homed, HomingError> {
+) -> Result<bool, HomingError> {
     faults.trip(fault).await;
     Err(error)
 }
@@ -127,14 +150,42 @@ async fn arm_stallguard(
     Ok(())
 }
 
-pub async fn home(
-    motion: &mut Motion,
-    driver: &mut TmcDriver<'_>,
-    faults: &mut FaultSupervisor,
-    axis: usize,
-    config: &HomingConfig,
-    run_config: &DriverConfig,
-) -> Result<Homed, HomingError> {
+impl Board {
+    /// Homes `axis`, with its driver configured as `enable` left it. An axis
+    /// that starts on its reference first steps twice the backoff off it,
+    /// against the travel.
+    pub async fn home(&mut self, axis: usize, config: &HomingConfig) -> Result<Homed, HomingError> {
+        let run_config = self
+            .driver_config(axis)
+            .ok_or(HomingError::InvalidConfiguration)?;
+        let origin = self.motion.origin()[axis];
+        if let HomingSensor::Endstop { endstop } = config.sensor {
+            step_off(&mut self.motion, &mut self.faults, axis, endstop, config).await?;
+        }
+        let Board {
+            motion,
+            tmc,
+            faults,
+            ..
+        } = self;
+        let mut driver = Driver::new(tmc, ADDRESSES[axis]);
+        if !pass(motion, &mut driver, faults, axis, config, &run_config).await? {
+            return Ok(Homed::NotFound);
+        }
+        if config.repeat_slowly {
+            let slow = config.slow_pass();
+            if !pass(motion, &mut driver, faults, axis, &slow, &run_config).await? {
+                return Ok(Homed::NotFound);
+            }
+        }
+        Ok(Homed::Found {
+            shift: motion.origin()[axis] - origin,
+        })
+    }
+}
+
+/// The pass's travel and backoff in steps, and its rate limits.
+fn pass_steps(motion: &Motion, axis: usize, config: &HomingConfig) -> Result<(i64, i64, Limits), HomingError> {
     let axis_config = motion.config(axis)?;
     let travel_steps = axis_config
         .steps(config.travel)
@@ -150,6 +201,48 @@ pub async fn home(
     if travel_steps == 0 || backoff_steps <= 0 || limits.validate().is_err() {
         return Err(HomingError::InvalidConfiguration);
     }
+    Ok((travel_steps, backoff_steps, limits))
+}
+
+/// Homing cannot start on its reference, so step off it first, at the axis's
+/// own limits: the move only leaves the stop.
+async fn step_off(
+    motion: &mut Motion,
+    faults: &mut FaultSupervisor,
+    axis: usize,
+    endstop: usize,
+    config: &HomingConfig,
+) -> Result<(), HomingError> {
+    if !faults.endstop_asserted(endstop) {
+        return Ok(());
+    }
+    let (travel_steps, backoff_steps, _) = pass_steps(motion, axis, config)?;
+    let mut away = [0i64; AXES];
+    away[axis] = -2 * backoff_steps * travel_steps.signum();
+    match select(motion.move_by(away), faults.wait_for_fault()).await {
+        Either::First(Ok(Outcome::Completed)) => {}
+        Either::First(Ok(Outcome::Aborted)) | Either::Second(_) => {
+            return Err(HomingError::Aborted)
+        }
+        Either::First(Err(error)) => return Err(HomingError::Motion(error)),
+    }
+    if faults.endstop_asserted(endstop) {
+        return Err(HomingError::PreassertedEndstop);
+    }
+    Ok(())
+}
+
+/// One pass: true once the axis is zeroed off its stop, false when the travel
+/// ran out first (and the outputs are off).
+async fn pass(
+    motion: &mut Motion,
+    driver: &mut TmcDriver<'_>,
+    faults: &mut FaultSupervisor,
+    axis: usize,
+    config: &HomingConfig,
+    run_config: &DriverConfig,
+) -> Result<bool, HomingError> {
+    let (travel_steps, backoff_steps, limits) = pass_steps(motion, axis, config)?;
 
     let trigger = match config.sensor {
         HomingSensor::StallGuard { .. } => HomingTrigger::Diag(axis),
@@ -264,7 +357,7 @@ pub async fn home(
 
     if !triggered {
         faults.disable_drivers();
-        return Ok(Homed::NotFound);
+        return Ok(false);
     }
 
     // Come off the stop straight away, or the motor keeps pushing the frame.
@@ -295,17 +388,11 @@ pub async fn home(
     }
 
     motion.zero(axis)?;
-    Ok(Homed::Found)
+    Ok(true)
 }
 
 async fn driver_is_faulted(driver: &mut TmcDriver<'_>) -> Result<bool, Error<TmcError>> {
     let global = driver.global_status().await?;
-    let status = driver.status().await?;
-    Ok(global.drv_err()
-        || global.uv_cp()
-        || status.ot()
-        || status.s2ga()
-        || status.s2gb()
-        || status.s2vsa()
-        || status.s2vsb())
+    let status = DriverStatus::from_registers(0, driver.status().await?);
+    Ok(global.drv_err() || global.uv_cp() || status.overtemperature || status.shorted())
 }

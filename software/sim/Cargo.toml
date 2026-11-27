@@ -1,0 +1,26 @@
+# The Omnimotion board in simulation: the real `omnimotion-board` sources compiled against stand-in chip
+# crates, on a simulated ESP32-S3 with its TMC2209s. An application adds its machine (`omnimotion_sim::Plant`).
+[workspace]
+resolver = "2"
+members = ["core", "board", "shims/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+omnimotion = { path = "../crates/omnimotion" }
+omnimotion-sim = { path = "core" }
+embassy-executor = { version = "0.10", default-features = false }
+embassy-futures = "0.1.2"
+embassy-sync = "0.8.0"
+embassy-time = "0.5.1"
+embassy-time-driver = "0.2.2"
+embedded-io-async = "0.7.0"
+embedded-hal-async = "1.0.0"
+heapless = { version = "0.9.4", features = ["serde"] }
+serde = { version = "1", default-features = false, features = ["derive"] }
+serde_json = "1"
+static_cell = "2.1.1"
+postcard = { version = "1.2", default-features = false, features = ["alloc"] }

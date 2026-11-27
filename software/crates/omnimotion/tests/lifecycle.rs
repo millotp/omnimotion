@@ -144,6 +144,46 @@ fn a_completed_job_resets_to_idle_and_can_start_again() {
 }
 
 #[test]
+fn a_restored_job_runs_from_its_checkpoint() {
+    let mut job = Lifecycle::new();
+    let checkpoint = JobProgress {
+        completed: 3,
+        total: 5,
+    };
+    job.restore(checkpoint).unwrap();
+    assert_eq!(job.state(), LifecycleState::Running);
+    assert_eq!(job.progress(), Some(checkpoint));
+    assert_eq!(job.begin_operation(), Ok(3));
+    assert_eq!(job.restore(checkpoint), Err(LifecycleError::InvalidTransition));
+
+    let finished = JobProgress {
+        completed: 5,
+        total: 5,
+    };
+    assert_eq!(
+        Lifecycle::new().restore(finished),
+        Err(LifecycleError::InvalidProgress)
+    );
+}
+
+#[test]
+fn a_paused_job_rewinds_but_never_forward() {
+    let mut job = Lifecycle::new();
+    job.start(4).unwrap();
+    for _ in 0..3 {
+        job.begin_operation().unwrap();
+        job.complete_operation().unwrap();
+    }
+    assert_eq!(job.rewind(1), Err(LifecycleError::InvalidTransition));
+    job.request_pause().unwrap();
+    job.pause().unwrap();
+    assert_eq!(job.rewind(4), Err(LifecycleError::InvalidProgress));
+    job.rewind(1).unwrap();
+    job.resume().unwrap();
+    assert_eq!(job.begin_operation(), Ok(1));
+}
+
+#[test]
 fn invalid_transitions_are_rejected() {
     let mut job = Lifecycle::new();
     assert_eq!(job.start(0), Err(LifecycleError::InvalidProgress));

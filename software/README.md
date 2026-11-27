@@ -39,22 +39,26 @@ Config {
         max_acceleration: 600.0,
         min_velocity: 2.0,
     }; AXES],
-    driver: DriverConfig {
+    drivers: [DriverConfig {
         run_current_ma: 700.0,
         ..DriverConfig::default()
-    },
+    }; AXES],
     ..Config::default()
 }
 ```
 
+`drivers` holds one `DriverConfig` per axis, which the board keeps and writes
+again whenever the outputs come on.
+
 Use `Board::new` instead if you want the survey without the checks, the driver
-configuration or the enable. `board.enable(&config)` does the rest later and can
-be retried, which `start` cannot: on error `start` drops the board, and the step
-ISR can only be installed once. So a machine that may boot on USB alone, or with
-the e-stop open, should call `new` and retry `enable` until it succeeds.
-`board.configure(&config)` is `enable` without turning the outputs on, for a
-machine that must not hold or move its motors at boot; `faults.enable_drivers()`
-turns them on when a command needs them.
+configuration or the enable. `board.enable()` does the rest later and can be
+retried, which `start` cannot: on error `start` drops the board, and the step
+ISR can only be installed once. `board.configure()` is `enable` without turning
+the outputs on, for a machine that must not hold or move its motors at boot;
+`enable` turns them on when a command needs them. A machine that may boot on
+USB alone, or with the e-stop open, calls `board.configure_when_ready(waiting)`,
+which retries `configure` every second while `StartError::is_waiting` and hands
+each such refusal to `waiting`.
 
 ## Two workspaces
 
@@ -62,6 +66,7 @@ turns them on when a command needs them.
 | --- | --- | --- |
 | `software/` | host stable | `omnimotion` — planner, step engine, units, endstop debounce, TMC2209 driver |
 | `software/firmware/` | `esp` (Xtensa) | `omnimotion-board` and the examples |
+| `software/sim/` | host stable (and wasm32) | the board in simulation, for an application's simulator (see [Simulator](#simulator)) |
 
 The split exists so the motion logic can be tested without installing a 1 GB
 cross toolchain. Nothing in `software/` depends on `esp-hal`; the planner and the
@@ -83,9 +88,9 @@ per axis continuously, subject to thermal validation in the finished enclosure.
 | `omnimotion` | `omnimotion-board` | Concern |
 | --- | --- | --- |
 | `motion/` planner, profile, engine, units, rotary, abort | `motion/` `Motion`, stepper, homing, supervisor | Moving the axes and stopping them |
-| `machine/` lifecycle, control, persistence | `control`, `storage/` NVS, persistence, web assets, flash lock | Job state, commands and what survives a reboot |
-| `devices/` tmc2209, endstop, power, check | `diag/` inventory, check; `pins` | The parts on the board |
-| `update/` ota, web | `net/` WiFi and the update endpoint, OTA slots | Getting new firmware and UI onto the board |
+| `machine/` lifecycle, control, persistence, log | `control`, `storage/` NVS, persistence, web assets, flash lock | Job state, commands and what survives a reboot |
+| `devices/` tmc2209 (with health), endstop, power, check | `diag/` inventory, check, health, log; `pins` | The parts on the board |
+| `net/` http; `update/` ota, web | `net/` WiFi, http, the update endpoint, OTA slots | Talking to the board and getting new firmware and UI onto it |
 
 `omnimotion-board`'s root holds the entry points: `board` (`Board`, `Config`),
 `boot` and `pins` (`BoardPins`, `split!`).
@@ -136,6 +141,38 @@ address on MS1 and MS2, and no fault. `virtual_hardware::hand` lets an applicati
 play the person who moves the machine by hand during a watch: it offsets the step
 counters the model sees and holds endstops triggered, without a step being taken.
 Never enable it for a board that drives real motors.
+
+## Simulator
+
+`software/sim/` runs an application's firmware, unchanged, on the host or in a
+browser, against a simulated board and the machine the application describes.
+It is its own workspace, excluded from `software/`, and only builds as part of
+an application's simulator, which lists its crates as path dependencies:
+
+| Crate | What it is |
+| --- | --- |
+| `core` (`omnimotion-sim`) | The virtual clock, both cores' executors, the ESP32-S3 peripherals the board uses (GPIO, I²C, UART, ADC, TIMG0's alarm and watchdog), the three TMC2209 sockets on the UART, the console, HTTP connections handed in by the host, NVS, MCU resets, and `stepper`: a hybrid stepper on a TMC2209 turning its load, with missed steps counted |
+| `board` (`omnimotion-board-sim`) | The real `omnimotion-board` sources through `#[path]`, with only boot, network and storage replaced |
+| `shims/*` | Stand-ins for `esp-hal`, `esp-rtos`, `esp-alloc`, `esp-println`, `esp-backtrace`, `esp-bootloader-esp-idf` and `embassy-net`, which call `omnimotion_sim::hal` |
+
+The application implements `omnimotion_sim::Plant` for its machine: when it next
+needs stepping, a step against the drivers' fields and currents (each axis a
+`stepper::Rotor` driving its `stepper::Load`), what it drives on each endstop
+input, and what it keeps over a reset. The host calls
+`omnimotion_sim::install(host, Board { supply_v, fitted }, saved, restore)`,
+then the firmware's `main`, then `run_until` to advance virtual time;
+`omnimotion_sim::with` and `World::plant_mut` reach the plant and the operator's
+`Env` (supply and e-stop) between steps. An MCU reset serialises the board, the
+drivers, flash and the plant's `save`, and the host restarts the firmware from
+it, with `restore(Some(saved))` rebuilding the plant.
+
+The application's simulator workspace points its `esp-hal`, `esp-rtos` and
+other chip crates at the shims, and `omnimotion-board` at `omnimotion-board-sim`,
+in `[workspace.dependencies]`. Check this workspace with:
+
+```bash
+cd software/sim && cargo clippy --all-targets
+```
 
 ## Flash layout and stored data
 
@@ -342,7 +379,7 @@ Considered and rejected:
 
 ## How motion works
 
-A fixed-rate timer tick (default 40 kHz) on TIMG0 runs the step engine, with the
+A fixed-rate timer tick (`omnimotion::TICK_HZ`, 40 kHz) on TIMG0 runs the step engine, with the
 handler in IRAM so flash cache misses cannot stall it. Embassy's time driver sits
 on SYSTIMER so the two never contend.
 
@@ -365,8 +402,8 @@ previous pulse is only retired when there was one, and the position counters are
 only stored on a tick that actually stepped. A tick that emits no step touches
 the hardware exactly twice, both times to re-arm the timer.
 
-Ceiling is one step per tick on the dominant axis: 40 k steps/s by default, about
-750 rpm at 1/16 microstepping. The tick rate is configurable.
+Ceiling is one step per tick on the dominant axis: 40 k steps/s, about 750 rpm
+at 1/16 microstepping. Applications validate their speeds against `TICK_HZ`.
 
 ## Abort and cross-core control
 
@@ -383,13 +420,16 @@ move along its own deceleration ramp, after the segments already queued (about
 15 ms); the move returns `Outcome::Aborted` with exact counters. It only affects
 a move already running when it is called.
 
-`ControlPlane` provides fixed-capacity command and completion queues plus a
-coherent copied `StatusSnapshot`. Split it once and keep the client on core 0
-and the machine endpoint beside `Board` on core 1. Queue-full is a submission
-error; busy, invalid-state, unavailable-axis, fault, and invalid-command errors
-are asynchronous command completions. Completion sends apply backpressure
-rather than discarding an accepted request. Application commands are generic,
-and homing sensor configuration stays in the application dispatcher.
+`ControlPlane` provides a fixed-capacity command queue, the completions kept by
+request ID, and a coherent copied `StatusSnapshot` (which includes each axis's
+homed `origin`). Split it once and keep the client on core 0 and the machine
+endpoint beside `Board` on core 1. Queue-full is a submission error; busy,
+invalid-state, unavailable-axis, fault, and invalid-command errors are
+asynchronous command completions. `complete` keeps the last `KEPT_COMPLETIONS`
+(16), dropping the oldest, and `take_completion(id)` hands one back once. A
+completion's `reason` carries the application's own explanation of a failure;
+`CommandError::name` is the generic one. Application commands are generic, and
+homing sensor configuration stays in the application dispatcher.
 
 ## Rotary motion and jobs
 
@@ -406,7 +446,9 @@ An immediate pause or stop remains transitional until its abort is
 acknowledged. A pause additionally requires the application to declare that it
 has recovered to a safe operation boundary. Stop and explicit fault recovery
 discard resumable progress; a fault can never be resumed as though it were a
-pause.
+pause. `restore(progress)` starts a job from a saved checkpoint, already
+`completed` operations in; `rewind(completed)` takes a paused job back, so the
+operations after it run again.
 
 ## Faults
 
@@ -429,14 +471,21 @@ reset. With the outputs disabled nothing can move, so a board that is idle,
 failed to start, or is waiting for commands with its drivers off does not need
 the supervisor running.
 
-`Fault` is `EStop`, `Endstop`, `Diag`, `Underrun`, `MotionEngine` or `Driver`.
-Tripping any of them latches the fault, aborts the queue and drops `DRV_EN`.
-`faults.clear(&mut board.motion)` clears the latch, but only while the outputs
-are already disabled, the e-stop is closed, no DIAG is asserted and no
-`Limit`-role endstop is triggered.
+`Fault` is `EStop`, `Endstop`, `Diag`, `Underrun`, `MotionEngine`, `Driver` or
+`Supply`. Tripping any of them latches the fault, aborts the queue and drops
+`DRV_EN`. `Supply` trips when VMOTOR leaves the motor-ready window while the
+outputs are enabled: the TMC2209s run their logic off it and come back with
+their power-on defaults, so they must not see another step before `enable`
+configures them again. `faults.clear(&mut board.motion)` clears the latch, but
+only while the outputs are already disabled, the e-stop is closed, no DIAG is
+asserted and no `Limit`-role endstop is triggered. `Fault::name`,
+`Fault::is_in(bits)` and `Fault::describe(bits)` read the latched bits.
 
 Because endstops are direct GPIOs the supervisor is a plain 2 ms poll with no
-I²C in the path, so none of it returns `Result`.
+I²C in the path, so none of it returns `Result`. `supervisor::endstops_triggered()`
+reads every connector's triggered state at once, polarity applied, without
+borrowing the supervisor, so an application can sample a sensor (a counter, say)
+while a move runs. `faults.rails()` reads the supply.
 
 ## Choosing the core
 
@@ -545,7 +594,8 @@ and names a verified part.
 
 ## Homing
 
-`motion::homing::home` runs one pass per call. `HomingSensor` chooses what ends it:
+`board.home(axis, &config)` homes one axis, with its driver as `enable`
+configured it. `HomingSensor` chooses what ends a pass:
 
 ```rust
 // Sensorless: push into the frame and let the driver notice the load.
@@ -573,9 +623,9 @@ measures nothing in SpreadCycle, `SGTHRS`, a CoolStep velocity gate armed from
 half the homing rate), wait out a 2 s settle so a stale stall flag cannot trip
 it, then put all of that back and interrogate the driver afterwards to check the
 load was the frame rather than a short or an overtemperature. The microstep
-setting for the velocity gate comes from the `DriverConfig` passed to `home`. An
-endstop pass touches the driver not at all: it homes at the axis's running
-current and starts moving immediately.
+setting for the velocity gate comes from the axis's `DriverConfig`. An endstop
+pass touches the driver not at all: it homes at the axis's running current and
+starts moving immediately.
 
 Choose sensorless when there is a hard end of travel and you would rather not
 fit a sensor. Choose an endstop when there is a switch already, when the datum
@@ -583,14 +633,21 @@ must be repeatable without tuning, or when the axis has no end of travel to cras
 into at all — a continuously rotating axis gives StallGuard nothing to detect, so
 an index sensor is the only option.
 
-`home` returns `Homed::Found` or `Homed::NotFound`, the latter meaning the whole
-travel budget ran out; it also disables the outputs, which
-`faults.enable_drivers()` turns back on. An endstop pass that begins already
-sitting on its datum returns `HomingError::PreassertedEndstop` without latching
-anything, since nothing has moved and nothing is wrong: step off the datum and
-call again. One that is still on its datum after backing off returns
-`HomingError::BackoffTooShort` without zeroing. An abort request during the pass
-returns `HomingError::Aborted` without latching a fault.
+An axis that starts on its endstop datum first steps twice the backoff off it,
+against the travel, at its own limits; if it is still on it,
+`HomingError::PreassertedEndstop` is returned without latching anything. With
+`repeat_slowly` set, a pass that found the datum is followed by
+`config.slow_pass()`: back to the datum from the new zero over twice the backoff
+at a quarter of the rate, for an edge that repeats better than a fast approach
+gives. `slow_pass` alone suits an axis whose zero is roughly known already, such
+as a rotary axis turned back to it from its count.
+
+`home` returns `Homed::Found { shift }`, where `shift` is how far the zero moved
+since the previous homing (the new origin minus the old; meaningless the first
+time), or `Homed::NotFound`, meaning the whole travel budget ran out; that also
+disables the outputs, which `enable` turns back on. One still on its datum after
+backing off returns `HomingError::BackoffTooShort` without zeroing. An abort
+request during a pass returns `HomingError::Aborted` without latching a fault.
 
 ## Startup inventory
 
@@ -611,7 +668,8 @@ GPIO1 using the chip's own calibrated ADC. `PowerSource` distinguishes `UsbOnly`
 `Bulk`, and `BulkOutOfRange`. The supported input is 12–24 V; firmware uses an
 11–26 V motor-ready window to allow supply and ADC tolerance.
 `Inventory::can_run_motors` folds that together with the e-stop into one go/no-go.
-`board.vmon.read()` re-reads it at any time.
+`board.faults.rails()` re-reads it at any time. The window is
+`omnimotion::devices::power::MOTOR_MIN_MV` to `MOTOR_MAX_MV`.
 
 The OLED probe is an address-only write, because an SSD1306 has no register worth
 reading and writing to it would change the display. It reports just the address
@@ -620,19 +678,47 @@ that answered — modules strap either 0x3C or 0x3D. The I²C bus stays availabl
 
 `drivers` is filled in during `Board::new`. VMOTOR is not switched on this
 board, so with bulk power present a TMC2209 can answer over UART from boot; with
-USB alone it cannot, which is why `enable` surveys again. `Responding` means the driver returned the 0x21 a TMC2209 reports in
+USB alone it cannot, which is why `configure` surveys again. `Responding` means the driver returned the 0x21 a TMC2209 reports in
 `IOIN.version`; `Missing` cannot tell an empty socket from a dead motor rail,
-which is why the power reading is worth reading first. `Board::enable`, which
-`Board::start` calls, re-surveys the drivers once power is confirmed and
-configures only the axes that answered. It refreshes VMON and the e-stop before
-and after driver configuration, then enables the shared ENN only while the
-supply is in the motor-ready window. USB-only and out-of-range power return
-`StartError::PowerNotReady`; no replies on otherwise valid bulk power return
-`StartError::NoDrivers`, and a non-0x21 reply returns
-`StartError::DriverMismatch`. Motion commands that include a missing or
-mismatched axis return `MotionError::AxisUnavailable`.
-`board.survey_drivers()` re-probes later and can remove a newly silent axis from
-the available set; it never makes a newly discovered, unconfigured axis runnable.
+which is why the power reading is worth reading first. `Board::configure`
+re-surveys the drivers once power is confirmed and configures only the axes
+that answered. It refreshes VMON and the e-stop before and after driver
+configuration. `Board::enable`, which `Board::start` calls, configures the
+surveyed drivers again (surveying first if none has answered yet), then enables
+the shared ENN only while the supply is in the motor-ready window. Both return
+the axes whose driver had reset since it was last configured (`GSTAT.reset`, or
+no answer), whose motors may have jumped up to two full steps. USB-only and
+out-of-range power return `StartError::PowerNotReady`; no replies on otherwise
+valid bulk power return `StartError::NoDrivers`, a non-0x21 reply returns
+`StartError::DriverMismatch`, and a latched fault `StartError::FaultLatched`.
+Motion commands that include a missing or mismatched axis return
+`MotionError::AxisUnavailable`. `board.survey_drivers()` re-probes later and can
+remove a newly silent axis from the available set; it never makes a newly
+discovered, unconfigured axis runnable.
+
+### Driver health
+
+`board.poll_drivers(require_response)` reads each available driver's
+`DRV_STATUS` into a `DriverStatus` (connected, standstill, open load, shorts,
+overtemperature and its warning; `Serialize`, for a status page) and returns them
+as `DriverHealth`, with the first `DriverProblem` it found. A short, an
+overtemperature or its warning, or (with `require_response`, as while a job
+runs) a silent driver trips `Fault::Driver`. Open loads are not counted: the
+driver can flag them at speed with the coils connected.
+
+### Log
+
+`diag::log::push(line)` keeps the newest `LOG_BYTES` (2 KB) of an application's
+console lines, and `diag::log::text` copies them out, oldest first, for a log
+endpoint. The ring is `omnimotion::machine::log::LogBuffer`.
+
+## HTTP
+
+`omnimotion::net::http` parses a request head (`parse_head`, against an API
+token compared in constant time, with `normalized_path` and `reason_phrase`),
+and `omnimotion_board::net::http` reads a head off a socket (`read_head`) and
+writes a whole response (`respond`). The update endpoint is built on them, and
+so can an application's API be.
 
 ## Wiring self-check
 

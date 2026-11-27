@@ -5,7 +5,7 @@ pub mod supervisor;
 use embassy_time::{with_timeout, Duration};
 use omnimotion::{
     group_limits, AxisConfig, Lifecycle, Limits, PlanError, Planner, RotaryError, RotaryPeriod,
-    Trapezoid, UnitError, WriteGate, AXES,
+    Trapezoid, UnitError, WriteGate, AXES, TICK_HZ,
 };
 
 use crate::storage::flash;
@@ -303,7 +303,7 @@ impl Motion {
 
         let stop_generation = stepper::stop_generation();
         let mut stopping = false;
-        let mut planner = Planner::new(delta, limits, self.stepper.tick_hz(), Trapezoid)?;
+        let mut planner = Planner::new(delta, limits, TICK_HZ, Trapezoid)?;
         let mut pending = planner.next().transpose()?;
 
         loop {

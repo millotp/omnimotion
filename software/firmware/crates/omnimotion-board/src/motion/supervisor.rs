@@ -1,11 +1,18 @@
+use core::cell::Cell;
+#[cfg(not(feature = "virtual-hardware"))]
+use core::cell::RefCell;
 use core::sync::atomic::{AtomicU32, Ordering};
 
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::blocking_mutex::Mutex;
 use embassy_time::{Duration, Timer};
 use esp_hal::gpio::{Input, Output};
 use esp_hal::timer::timg::MwdtStage;
-use omnimotion::devices::endstop::{EndstopBank, EndstopConfig, EndstopRole, ENDSTOPS};
+use omnimotion::devices::endstop::{self, EndstopBank, EndstopConfig, EndstopRole, ENDSTOPS};
+use omnimotion::devices::power::{PowerSource, Rails};
 use omnimotion::AXES;
 
+use crate::diag::inventory::Vmon;
 use crate::motion::stepper;
 use crate::motion::Motion;
 
@@ -25,6 +32,48 @@ pub enum Fault {
     Underrun = 1 << 3,
     MotionEngine = 1 << 4,
     Driver = 1 << 5,
+    /// VMOTOR left the motor-ready window with the outputs on. The TMC2209s
+    /// run their logic off it, so they come back with power-on defaults
+    /// (strapped microsteps, full current) and must be configured again before
+    /// another step; `Board::enable` does that.
+    Supply = 1 << 6,
+}
+
+impl Fault {
+    const ALL: [Self; 7] = [
+        Self::EStop,
+        Self::Endstop,
+        Self::Diag,
+        Self::Underrun,
+        Self::MotionEngine,
+        Self::Driver,
+        Self::Supply,
+    ];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::EStop => "emergency stop",
+            Self::Endstop => "limit switch",
+            Self::Diag => "driver diagnostic",
+            Self::Underrun => "step underrun",
+            Self::MotionEngine => "motion engine",
+            Self::Driver => "motor driver",
+            Self::Supply => "motor supply lost",
+        }
+    }
+
+    /// Whether `bits`, as `latched` returns them, include this fault.
+    pub fn is_in(self, bits: u32) -> bool {
+        bits & self as u32 != 0
+    }
+
+    /// The names of the latched `bits`: one fault's name, or "multiple faults".
+    pub fn describe(bits: u32) -> &'static str {
+        Self::ALL
+            .into_iter()
+            .find(|fault| *fault as u32 == bits)
+            .map_or("multiple faults", Self::name)
+    }
 }
 
 /// What a homing pass waits for; handed back unlatched instead of faulting.
@@ -46,15 +95,53 @@ pub(crate) fn clear_latch() {
     LATCHED.store(0, Ordering::Release);
 }
 
+/// The endstop inputs and their wiring live outside the supervisor, so they
+/// can be read from anywhere, even while a move has the supervisor watching.
+#[cfg(not(feature = "virtual-hardware"))]
+static ENDSTOP_PINS: Mutex<CriticalSectionRawMutex, RefCell<Option<[Input<'static>; ENDSTOPS]>>> =
+    Mutex::new(RefCell::new(None));
+static ENDSTOP_CONFIG: Mutex<CriticalSectionRawMutex, Cell<[EndstopConfig; ENDSTOPS]>> =
+    Mutex::new(Cell::new([EndstopConfig::UNUSED; ENDSTOPS]));
+
+/// The six inputs as one bitmask, bit n the level of En. Each idles high
+/// through its pull-up.
+#[cfg(not(feature = "virtual-hardware"))]
+pub(crate) fn endstop_levels() -> u8 {
+    ENDSTOP_PINS.lock(|pins| {
+        pins.borrow().as_ref().map_or(u8::MAX, |pins| {
+            pins.iter()
+                .enumerate()
+                .filter(|(_, pin)| pin.is_high())
+                .fold(0, |levels, (endstop, _)| levels | 1 << endstop)
+        })
+    })
+}
+
+/// The levels the installed machine model implies: each input is low while its endstop is
+/// triggered, or high while it is, for a connector wired the other way round.
+#[cfg(feature = "virtual-hardware")]
+pub(crate) fn endstop_levels() -> u8 {
+    let triggered = crate::virtual_hardware::triggered();
+    let config = ENDSTOP_CONFIG.lock(Cell::get);
+    (0..ENDSTOPS)
+        .filter(|&endstop| (triggered & (1 << endstop) != 0) != config[endstop].active_low)
+        .fold(0, |levels, endstop| levels | 1 << endstop)
+}
+
+/// The fitted endstops triggered right now (bit n is En), undebounced. Cheap
+/// enough to sample every few hundred microseconds during a move.
+pub fn endstops_triggered() -> u8 {
+    endstop::triggered(&ENDSTOP_CONFIG.lock(Cell::get), endstop_levels())
+}
+
 pub struct FaultSupervisor {
     watchdog: stepper::Watchdog,
     #[cfg_attr(feature = "virtual-hardware", allow(dead_code))]
     estop: Input<'static>,
     drv_en: Output<'static>,
     diag: [Input<'static>; AXES],
-    #[cfg_attr(feature = "virtual-hardware", allow(dead_code))]
-    endstops: [Input<'static>; ENDSTOPS],
     bank: EndstopBank,
+    vmon: Vmon,
 }
 
 impl FaultSupervisor {
@@ -65,15 +152,21 @@ impl FaultSupervisor {
         diag: [Input<'static>; AXES],
         endstops: [Input<'static>; ENDSTOPS],
         config: [EndstopConfig; ENDSTOPS],
+        vmon: Vmon,
     ) -> Self {
         watchdog.set_timeout(MwdtStage::Stage0, esp_hal::time::Duration::from_secs(5));
+        #[cfg(not(feature = "virtual-hardware"))]
+        ENDSTOP_PINS.lock(|pins| *pins.borrow_mut() = Some(endstops));
+        #[cfg(feature = "virtual-hardware")]
+        let _ = endstops;
+        ENDSTOP_CONFIG.lock(|stored| stored.set(config));
         Self {
             watchdog,
             estop,
             drv_en,
             diag,
-            endstops,
             bank: EndstopBank::new(config),
+            vmon,
         }
     }
 
@@ -88,6 +181,11 @@ impl FaultSupervisor {
     #[cfg(feature = "virtual-hardware")]
     pub fn estop_closed(&self) -> bool {
         true
+    }
+
+    /// The rails as VMOTOR reads now.
+    pub fn rails(&mut self) -> Rails {
+        self.vmon.read()
     }
 
     pub fn drivers_enabled(&self) -> bool {
@@ -123,38 +221,7 @@ impl FaultSupervisor {
 
     /// Whether a connector reads triggered right now, undebounced.
     pub fn endstop_asserted(&self, endstop: usize) -> bool {
-        self.bank.triggered_now(self.port()) & (1 << endstop) != 0
-    }
-
-    /// The six inputs as one bitmask, in the order `EndstopBank` expects. Each
-    /// idles high through its pull-up.
-    #[cfg(not(feature = "virtual-hardware"))]
-    pub(crate) fn port(&self) -> u8 {
-        let mut port = 0;
-        for (endstop, pin) in self.endstops.iter().enumerate() {
-            if pin.is_high() {
-                port |= 1 << endstop;
-            }
-        }
-        port
-    }
-
-    /// The levels the installed machine model implies: each input is low while its endstop is
-    /// triggered, or high while it is, for a connector wired the other way round.
-    #[cfg(feature = "virtual-hardware")]
-    pub(crate) fn port(&self) -> u8 {
-        let triggered = crate::virtual_hardware::triggered();
-        let mut port = 0;
-        for endstop in 0..ENDSTOPS {
-            let active_low = self
-                .bank
-                .config(endstop)
-                .map_or(true, |config| config.active_low);
-            if (triggered & (1 << endstop) != 0) != active_low {
-                port |= 1 << endstop;
-            }
-        }
-        port
+        endstops_triggered() & (1 << endstop) != 0
     }
 
     pub async fn trip(&mut self, fault: Fault) {
@@ -173,7 +240,7 @@ impl FaultSupervisor {
         if self.drivers_enabled()
             || !self.estop_closed()
             || self.diag.iter().any(Input::is_high)
-            || self.bank.triggered_now(self.port()) & limits != 0
+            || endstops_triggered() & limits != 0
             || !motion.clear_fault()
         {
             return false;
@@ -182,8 +249,9 @@ impl FaultSupervisor {
         true
     }
 
-    /// Limits debounce against their configured type; DIAG and e-stop trip
-    /// immediately. References are ignored: a job is expected to drive into them.
+    /// Limits debounce against their configured type; DIAG, the e-stop and
+    /// the motor supply trip immediately. References are ignored: a job is
+    /// expected to drive into them.
     pub async fn wait_for_fault(&mut self) -> Fault {
         self.wait_for_event(None, None)
             .await
@@ -229,6 +297,10 @@ impl FaultSupervisor {
                 self.trip(Fault::EStop).await;
                 return Some(Fault::EStop);
             }
+            if self.drivers_enabled() && self.vmon.read().source() != PowerSource::Bulk {
+                self.trip(Fault::Supply).await;
+                return Some(Fault::Supply);
+            }
 
             for axis in 0..AXES {
                 if self.diag[axis].is_high() {
@@ -243,7 +315,7 @@ impl FaultSupervisor {
                 }
             }
 
-            let triggered = self.bank.sample(self.port());
+            let triggered = self.bank.sample(endstop_levels());
             if let Some(HomingTrigger::Endstop(endstop)) = trigger {
                 if triggered & (1 << endstop) != 0 {
                     return None;

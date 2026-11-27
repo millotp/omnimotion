@@ -1,0 +1,30 @@
+# omnimotion-board with the production sources for the board, motion (step ISR, homing, fault supervisor),
+# control plane, diagnostics and persistence included as they are; boot, WiFi and flash are simulated.
+[package]
+name = "omnimotion-board-sim"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "omnimotion_board"
+
+[features]
+# Named only so the production sources' `cfg(feature = "virtual-hardware")` is known; never enabled.
+virtual-hardware = []
+
+[dependencies]
+omnimotion.workspace = true
+omnimotion-sim.workspace = true
+esp-hal = { path = "../shims/esp-hal", package = "esp-hal-sim" }
+embassy-net = { path = "../shims/embassy-net", package = "embassy-net-sim" }
+embassy-time.workspace = true
+embassy-futures.workspace = true
+embassy-sync.workspace = true
+embassy-executor.workspace = true
+heapless.workspace = true
+static_cell.workspace = true
+embedded-io-async.workspace = true
+embedded-hal-async.workspace = true
+serde.workspace = true
+postcard.workspace = true

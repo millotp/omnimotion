@@ -1355,6 +1355,7 @@ dependencies = [
  "embedded-hal-async",
  "embedded-io-async 0.7.0",
  "libm",
+ "serde",
  "tmc2209",
 ]
 

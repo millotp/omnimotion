@@ -1,0 +1,17 @@
+# The simulated board: virtual clock, executors, the ESP32-S3 peripherals the firmware touches, the TMC2209s
+# on their UART, the stepper motors' physics and the network. No threads and no wall clock, so it runs the
+# same natively and in WebAssembly; the host decides how fast virtual time advances.
+[package]
+name = "omnimotion-sim"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+omnimotion.workspace = true
+embassy-executor.workspace = true
+embassy-time-driver.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json.workspace = true
+critical-section = { version = "1.2", features = ["std"] }
+tmc2209 = { version = "0.3.0", default-features = false }

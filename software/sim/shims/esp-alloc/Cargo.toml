@@ -1,0 +1,10 @@
+[package]
+name = "esp-alloc-sim"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "esp_alloc"
+
+[dependencies]

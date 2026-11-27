@@ -1,3 +1,4 @@
+use embassy_time::{Duration, Timer};
 use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig, Pull};
 use esp_hal::i2c::master::{Config as I2cConfig, I2c};
 use esp_hal::time::Rate;
@@ -6,10 +7,10 @@ use esp_hal::uart::{Config as UartConfig, Uart};
 use esp_hal::Async;
 use omnimotion::devices::power::PowerSource;
 use omnimotion::devices::tmc2209::{Bus, Driver, DriverConfig};
-use omnimotion::{steps_per_mm, AxisConfig, EndstopConfig, AXES, ENDSTOPS};
+use omnimotion::{steps_per_mm, AxisConfig, AxisMask, EndstopConfig, AXES, ENDSTOPS};
 
 use crate::diag::inventory::{self, DriverPresence, Inventory, Vmon};
-use crate::motion::supervisor::FaultSupervisor;
+use crate::motion::supervisor::{self, FaultSupervisor};
 use crate::motion::{stepper, Motion};
 use crate::pins::{self, BoardPins};
 
@@ -23,6 +24,9 @@ pub type TmcBus = Bus<TmcSerial, embassy_time::Delay>;
 pub type TmcDriver<'a> = Driver<'a, TmcSerial, embassy_time::Delay>;
 pub type TmcError = <TmcSerial as embedded_io_async::ErrorType>::Error;
 
+/// How often `configure_when_ready` tries again.
+const READY_RETRY: Duration = Duration::from_secs(1);
+
 /// Everything `Board::start` needs. `Default` is a 200-step motor on 16
 /// microsteps driving a 40 mm/rev belt, with no endstops fitted.
 #[derive(Clone, Copy, Debug)]
@@ -30,8 +34,8 @@ pub struct Config {
     pub axes: [AxisConfig; AXES],
     /// What is wired to J11-J16, in E0-E5 order.
     pub endstops: [EndstopConfig; ENDSTOPS],
-    pub driver: DriverConfig,
-    pub tick_hz: u32,
+    /// Applied to each axis's driver every time the outputs come on.
+    pub drivers: [DriverConfig; AXES],
 }
 
 impl Default for Config {
@@ -44,8 +48,7 @@ impl Default for Config {
                 min_velocity: 2.0,
             }; AXES],
             endstops: [EndstopConfig::UNUSED; ENDSTOPS],
-            driver: DriverConfig::default(),
-            tick_hz: stepper::DEFAULT_TICK_HZ,
+            drivers: [DriverConfig::default(); AXES],
         }
     }
 }
@@ -54,6 +57,8 @@ impl Default for Config {
 pub enum StartError {
     /// `enable` would reconfigure drivers that are already driving the motors.
     AlreadyEnabled,
+    /// A fault is latched; `faults.clear` first.
+    FaultLatched,
     EStopOpen,
     PowerNotReady(PowerSource),
     /// No driver answered despite VMOTOR being inside the motor-ready window.
@@ -65,10 +70,18 @@ pub enum StartError {
     DriverConfig,
 }
 
+impl StartError {
+    /// Whether waiting can cure it: the e-stop closing or the supply arriving.
+    pub fn is_waiting(&self) -> bool {
+        matches!(self, Self::EStopOpen | Self::PowerNotReady(_))
+    }
+}
+
 impl core::fmt::Display for StartError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             Self::AlreadyEnabled => f.write_str("the motor drivers are already enabled"),
+            Self::FaultLatched => f.write_str("a fault is latched"),
             Self::EStopOpen => f.write_str("e-stop open"),
             Self::PowerNotReady(PowerSource::UsbOnly) => {
                 f.write_str("no motor supply, the board runs on USB alone")
@@ -91,10 +104,10 @@ pub struct Board {
     pub motion: Motion,
     pub tmc: TmcBus,
     pub faults: FaultSupervisor,
-    pub vmon: Vmon,
     /// Free for the application: the only thing on it is the OLED header.
     pub i2c: I2c<'static, Async>,
     pub inventory: Inventory,
+    drivers: [DriverConfig; AXES],
 }
 
 impl Board {
@@ -105,32 +118,38 @@ impl Board {
     /// generation off the core the application is using.
     ///
     /// The board is dropped on error and the step ISR cannot be installed twice,
-    /// so an application that wants to retry, say once the e-stop closes or the
-    /// bulk supply arrives, uses `new` and then `enable` instead.
+    /// so an application that wants to wait, say for the e-stop to close or the
+    /// bulk supply to arrive, uses `new` and then `configure_when_ready`.
     pub async fn start(pins: BoardPins, config: Config) -> Result<Self, StartError> {
         let mut board = Self::new(pins, &config).await;
-        board.enable(&config).await?;
+        board.enable().await?;
         Ok(board)
     }
 
-    /// Checks the e-stop and supply, re-surveys and configures every driver
-    /// that answers, then enables the outputs. Safe to call again after an
-    /// error; refuses while the outputs are already enabled.
-    pub async fn enable(&mut self, config: &Config) -> Result<(), StartError> {
-        self.configure(config).await?;
+    /// Checks the e-stop and supply, configures again every driver the survey
+    /// found (`configure` surveys first if none has answered yet), then
+    /// enables the outputs. Returns the axes whose driver had reset since it
+    /// was last configured (a supply drop does that, even with the outputs
+    /// off), which may have jumped up to two full steps. Safe to call again
+    /// after an error; refuses while the outputs are already enabled.
+    pub async fn enable(&mut self) -> Result<AxisMask, StartError> {
+        let reset = if self.inventory.drivers_responding() == 0 {
+            self.configure().await?
+        } else {
+            self.ready_to_configure()?;
+            let reset = self.apply_drivers().await?;
+            self.check_power()?;
+            reset
+        };
         self.faults.enable_drivers();
-        Ok(())
+        Ok(reset)
     }
 
-    /// `enable` without the last step: the drivers are configured and the
-    /// available axes set, but the outputs stay off, so nothing moves or
-    /// holds. `faults.enable_drivers()` turns them on later.
-    pub async fn configure(&mut self, config: &Config) -> Result<(), StartError> {
-        if self.faults.drivers_enabled() {
-            return Err(StartError::AlreadyEnabled);
-        }
-        self.check_power()?;
-
+    /// Surveys the drivers, configures every one that answers and sets the
+    /// available axes, but leaves the outputs off, so nothing moves or holds.
+    /// `enable` turns them on later.
+    pub async fn configure(&mut self) -> Result<AxisMask, StartError> {
+        self.ready_to_configure()?;
         self.inventory.drivers = inventory::survey_drivers(&mut self.tmc).await;
         for (axis, driver) in self.inventory.drivers.iter().enumerate() {
             if let DriverPresence::Mismatched(version) = driver {
@@ -143,24 +162,62 @@ impl Board {
         if self.inventory.drivers_responding() == 0 {
             return Err(StartError::NoDrivers);
         }
+        let reset = self.apply_drivers().await?;
+        self.motion
+            .set_available_axes(self.inventory.responding_axes());
 
+        self.check_power()?;
+        Ok(reset)
+    }
+
+    fn ready_to_configure(&mut self) -> Result<(), StartError> {
+        if self.faults.drivers_enabled() {
+            return Err(StartError::AlreadyEnabled);
+        }
+        if supervisor::latched() != 0 {
+            return Err(StartError::FaultLatched);
+        }
+        self.check_power()
+    }
+
+    /// Writes each surveyed driver's configuration, returning the axes whose
+    /// driver had reset.
+    async fn apply_drivers(&mut self) -> Result<AxisMask, StartError> {
+        let mut reset = 0;
         for axis in 0..AXES {
             if self.inventory.drivers[axis] != DriverPresence::Responding {
                 continue;
             }
+            let config = self.drivers[axis];
             let mut driver = self.driver(axis).expect("axis in board range");
-            if driver.apply(&config.driver).await.is_err() {
+            if driver.take_reset().await.unwrap_or(true) {
+                reset |= 1 << axis;
+            }
+            if driver.apply(&config).await.is_err() {
                 return Err(StartError::DriverConfig);
             }
         }
-        self.motion
-            .set_available_axes(self.inventory.responding_axes());
+        Ok(reset)
+    }
 
-        self.check_power()
+    /// `configure`, tried again every second while the e-stop is open or the
+    /// motor supply is missing; `waiting` hears each such refusal. Any other
+    /// error ends it.
+    pub async fn configure_when_ready(
+        &mut self,
+        mut waiting: impl FnMut(&StartError),
+    ) -> Result<AxisMask, StartError> {
+        loop {
+            match self.configure().await {
+                Err(error) if error.is_waiting() => waiting(&error),
+                result => return result,
+            }
+            Timer::after(READY_RETRY).await;
+        }
     }
 
     fn check_power(&mut self) -> Result<(), StartError> {
-        self.inventory.rails = self.vmon.read();
+        self.inventory.rails = self.faults.rails();
         self.inventory.estop_closed = self.faults.estop_closed();
         if !self.inventory.estop_closed {
             return Err(StartError::EStopOpen);
@@ -169,6 +226,11 @@ impl Board {
             return Err(StartError::PowerNotReady(self.inventory.source()));
         }
         Ok(())
+    }
+
+    /// The configuration `enable` applies to `axis`'s driver.
+    pub fn driver_config(&self, axis: usize) -> Option<DriverConfig> {
+        self.drivers.get(axis).copied()
     }
 
     /// Builds the board and surveys it, leaving the outputs disabled and the
@@ -222,12 +284,8 @@ impl Board {
         let estop_closed = estop.is_low();
         let drv_en = Output::new(peripherals.drv_en, Level::Low, OutputConfig::default());
 
-        let (stepper, watchdog) = stepper::start(
-            peripherals.timg0,
-            peripherals.step,
-            peripherals.dir,
-            config.tick_hz,
-        );
+        let (stepper, watchdog) =
+            stepper::start(peripherals.timg0, peripherals.step, peripherals.dir);
 
         let mut tmc = Bus::new(uart, embassy_time::Delay);
         let drivers = inventory::survey_drivers(&mut tmc).await;
@@ -248,10 +306,11 @@ impl Board {
                 peripherals.diag.map(|pin| Input::new(pin, pulled_down)),
                 peripherals.endstops.map(|pin| Input::new(pin, pulled_up)),
                 config.endstops,
+                vmon,
             ),
-            vmon,
             i2c,
             inventory,
+            drivers: config.drivers,
         }
     }
 

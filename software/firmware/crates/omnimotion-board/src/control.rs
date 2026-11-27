@@ -27,6 +27,7 @@ pub fn snapshot(
     StatusSnapshot {
         lifecycle,
         raw_position: board.motion.raw_position(),
+        origin: board.motion.origin(),
         available_axes: board.motion.available_axes(),
         drivers_enabled: board.faults.drivers_enabled(),
         active_request,

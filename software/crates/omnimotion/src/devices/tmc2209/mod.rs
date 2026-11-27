@@ -1,6 +1,7 @@
 pub mod bus;
 pub mod config;
 pub mod emulator;
+pub mod health;
 pub mod stallguard;
 
 pub use ::tmc2209::data::MicroStepResolution;
@@ -10,6 +11,7 @@ pub use config::{
     current_scale, current_scales, microstep_resolution, ConfigError, Driver, DriverConfig,
     MAX_CURRENT_MA, R_SENSE, VERSION,
 };
+pub use health::{DriverProblem, DriverStatus};
 pub use stallguard::tstep_for_rate;
 
 /// UART addresses of the three drivers, set by the MS1/MS2 straps.
