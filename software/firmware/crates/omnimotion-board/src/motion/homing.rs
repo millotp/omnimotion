@@ -46,6 +46,12 @@ pub struct HomingConfig {
     /// Distance to back off the stop, opposite the travel direction. The axis
     /// zeroes here, not on the stop.
     pub backoff: f32,
+    /// The furthest an axis that starts on its endstop datum may step off it,
+    /// against the travel, twice the backoff at a time until it clears. Twice
+    /// the backoff or less is a single step. A rotary axis whose sensor reads
+    /// a wide stretch needs more; a linear axis should not step far toward
+    /// whatever lies the other way.
+    pub step_off: f32,
     /// Once found, run `slow_pass` too, for an edge that repeats better than a
     /// fast approach gives.
     pub repeat_slowly: bool,
@@ -152,8 +158,8 @@ async fn arm_stallguard(
 
 impl Board {
     /// Homes `axis`, with its driver configured as `enable` left it. An axis
-    /// that starts on its reference first steps twice the backoff off it,
-    /// against the travel.
+    /// that starts on its reference first steps off it, against the travel
+    /// (see [`HomingConfig::step_off`]).
     pub async fn home(&mut self, axis: usize, config: &HomingConfig) -> Result<Homed, HomingError> {
         let run_config = self
             .driver_config(axis)
@@ -209,7 +215,8 @@ fn pass_steps(
 }
 
 /// Homing cannot start on its reference, so step off it first, at the axis's
-/// own limits: the move only leaves the stop.
+/// own limits, twice the backoff at a time until it clears, within
+/// `config.step_off`.
 async fn step_off(
     motion: &mut Motion,
     faults: &mut FaultSupervisor,
@@ -221,19 +228,28 @@ async fn step_off(
         return Ok(());
     }
     let (travel_steps, backoff_steps, _) = pass_steps(motion, axis, config)?;
+    let budget = motion
+        .config(axis)?
+        .steps(config.step_off)
+        .map_err(MotionError::from)?
+        .unsigned_abs();
+    let increment = 2 * backoff_steps;
+    let increments = budget.div_ceil(increment.unsigned_abs()).max(1);
     let mut away = [0i64; AXES];
-    away[axis] = -2 * backoff_steps * travel_steps.signum();
-    match select(motion.move_by(away), faults.wait_for_fault()).await {
-        Either::First(Ok(Outcome::Completed)) => {}
-        Either::First(Ok(Outcome::Aborted)) | Either::Second(_) => {
-            return Err(HomingError::Aborted)
+    away[axis] = -increment * travel_steps.signum();
+    for _ in 0..increments {
+        match select(motion.move_by(away), faults.wait_for_fault()).await {
+            Either::First(Ok(Outcome::Completed)) => {}
+            Either::First(Ok(Outcome::Aborted)) | Either::Second(_) => {
+                return Err(HomingError::Aborted)
+            }
+            Either::First(Err(error)) => return Err(HomingError::Motion(error)),
         }
-        Either::First(Err(error)) => return Err(HomingError::Motion(error)),
+        if !faults.endstop_asserted(endstop) {
+            return Ok(());
+        }
     }
-    if faults.endstop_asserted(endstop) {
-        return Err(HomingError::PreassertedEndstop);
-    }
-    Ok(())
+    Err(HomingError::PreassertedEndstop)
 }
 
 /// One pass: true once the axis is zeroed off its stop, false when the travel

@@ -195,6 +195,35 @@ fn the_ramp_rises_from_the_minimum_and_falls_back_to_it() {
 }
 
 #[test]
+fn a_move_neither_waits_to_start_nor_lingers_at_its_end() {
+    // A slow floor and a fast ramp, as a microstepped leadscrew axis has.
+    let limits = Limits {
+        max_rate: 28_000.0,
+        min_rate: 16.0,
+        accel: 160_000.0,
+    };
+    let mut engine = StepEngine::new();
+    let (mut tick, mut steps) = (0u64, Vec::new());
+    for segment in Planner::new([400, 0, 0], limits, TICK_HZ, Trapezoid).unwrap() {
+        engine.load(segment.unwrap()).unwrap();
+        while !engine.idle() {
+            tick += 1;
+            if engine.tick().unwrap().step != 0 {
+                steps.push(tick);
+            }
+        }
+    }
+
+    assert_eq!(steps[0], 1, "the first step waited");
+    let one_step_out = (limits.min_rate.powi(2) + 2.0 * limits.accel).sqrt();
+    let last_gap = (steps[steps.len() - 1] - steps[steps.len() - 2]) as f32 / TICK_HZ as f32;
+    assert!(
+        last_gap <= 1.0 / one_step_out + 1.0 / TICK_HZ as f32,
+        "the last step waited {last_gap} s"
+    );
+}
+
+#[test]
 fn the_ramp_only_changes_direction_once() {
     let (_, rates) = run([4_000, 0, 0], limits());
     let falling = rates.windows(2).position(|w| w[1] < w[0]).unwrap();
@@ -513,9 +542,10 @@ fn segment_rates_stay_inside_both_endpoint_envelopes() {
         let segment = segment.unwrap();
         let end = travelled + segment.steps as u64;
         let actual = rate_hz(segment.rate);
+        // Its steps wait at the positions `travelled` to `end - 1`.
         let bound = Trapezoid
             .rate(travelled, total, &limits)
-            .min(Trapezoid.rate(end, total, &limits));
+            .min(Trapezoid.rate(end - 1, total, &limits));
         assert!(
             actual <= bound + 0.01,
             "segment {travelled}..{end}: {actual} exceeds {bound}"
@@ -635,7 +665,6 @@ fn engine_reports_coordinate_overflow_without_wrapping() {
         })
         .unwrap();
 
-    assert!(engine.tick().is_ok());
     assert_eq!(engine.tick(), Err(EngineError::CoordinateOverflow));
     assert_eq!(engine.position()[0], i64::MAX);
 }

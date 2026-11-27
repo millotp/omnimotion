@@ -106,13 +106,19 @@ impl<P: Profile> Iterator for Planner<P> {
             return None;
         }
 
+        // A move's first step goes out at once (see `StepEngine::load`), and each
+        // later step waits one interval at the rate where the step before it
+        // landed: this slice's steps wait at `travelled` to
+        // `travelled + steps - 1`. Sampling `travelled + steps`, the stopping
+        // point of a final slice, would hold the move's last step for a whole
+        // interval at `min_rate`.
         let start_rate = self.profile.rate(self.travelled, self.total, &self.limits);
         let steps = ((start_rate * SLICE_SECONDS) as u64)
             .clamp(1, remaining)
             .min(u32::MAX as u64);
         let end_rate = self
             .profile
-            .rate(self.travelled + steps, self.total, &self.limits);
+            .rate(self.travelled + steps - 1, self.total, &self.limits);
         // The lower endpoint prevents a constant-rate slice overshooting the ramp.
         let rate = match (
             nco_increment(start_rate, self.tick_hz),

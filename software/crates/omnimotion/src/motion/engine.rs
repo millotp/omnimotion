@@ -75,7 +75,10 @@ impl StepEngine {
             // Half a master step of lead spreads each axis evenly rather than
             // bunching its steps against the start of the move.
             self.bresenham = [self.total / 2; AXES];
-            self.accumulator = 0;
+            // The first step goes out on the first tick: a move starts at
+            // `min_rate`, which the stepper takes unramped, so it does not
+            // wait a whole interval at that rate first.
+            self.accumulator = segment.rate.wrapping_neg();
             self.move_steps_left = self.total;
         } else if self.total == 0 {
             return Err(EngineError::InvalidSegment);

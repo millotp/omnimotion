@@ -390,7 +390,10 @@ counted as steps happen, so they stay exact even if a move is aborted mid-flight
 by an endstop or a stall.
 
 Moves are sliced into **segments** of roughly 1 ms, each carrying a constant rate
-and an exact master step count. A task fills a 16-deep SPSC queue that the ISR
+and an exact master step count. A move's first step goes out on its first tick,
+and each later step waits one interval at the trapezoid's rate where the step
+before it landed, the slower end of its segment, so a move neither waits nor
+lingers a whole interval at `min_rate` at either end. A task fills a 16-deep SPSC queue that the ISR
 drains, so memory does not depend on move length. The ISR wakes the feeder as the
 queue empties rather than the feeder polling for room.
 
@@ -639,8 +642,11 @@ must be repeatable without tuning, or when the axis has no end of travel to cras
 into at all — a continuously rotating axis gives StallGuard nothing to detect, so
 an index sensor is the only option.
 
-An axis that starts on its endstop datum first steps twice the backoff off it,
-against the travel, at its own limits; if it is still on it,
+An axis that starts on its endstop datum first steps off it, against the travel,
+at its own limits, twice the backoff at a time until it clears, up to
+`step_off` (twice the backoff or less is one step: a linear axis should not walk
+far toward whatever lies the other way, while a rotary axis whose sensor reads a
+wide stretch needs more); if it is still on it,
 `HomingError::PreassertedEndstop` is returned without latching anything. With
 `repeat_slowly` set, a pass that found the datum is followed by
 `config.slow_pass()`: back to the datum from the new zero over twice the backoff

@@ -83,6 +83,7 @@ async fn board_task(pins: BoardPins) {
         rate: 20.0,
         accel: 200.0,
         backoff: 3.0,
+        step_off: 6.0,
         repeat_slowly: false,
     };
 
