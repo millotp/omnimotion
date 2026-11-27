@@ -11,9 +11,9 @@ pub struct Config;
 impl Config {
     pub fn with_baudrate(self, baud: u32) -> Self {
         assert_eq!(
-            baud as f64,
+            baud,
             omnimotion_sim::tmc::BAUD,
-            "the simulated TMC bus runs at 115200 baud"
+            "the simulated TMC bus runs at the drivers' baud rate"
         );
         self
     }
@@ -75,7 +75,8 @@ impl embedded_io_async::Read for Uart<'_, crate::Async> {
         if buf.is_empty() {
             return Ok(0);
         }
-        poll_fn(|cx| omnimotion_sim::hal::uart_read(buf, cx.waker()).map_err(|_| IoError::Overrun)).await
+        poll_fn(|cx| omnimotion_sim::hal::uart_read(buf, cx.waker()).map_err(|_| IoError::Overrun))
+            .await
     }
 }
 

@@ -11,9 +11,7 @@ pub mod persistence;
 use alloc::vec::Vec;
 
 use esp_hal::peripherals::FLASH;
-
-/// The NVS limit on a key or namespace, excluding the null terminator.
-pub const MAX_NAME_LEN: usize = 15;
+pub use omnimotion::machine::persistence::{names_fit, MAX_NAME_LEN};
 
 /// The host's allocator is already in place.
 pub fn init_heap() {}
@@ -47,12 +45,14 @@ impl Store {
         key: &str,
     ) -> Result<Option<Vec<u8>>, StorageError> {
         names(namespace, key)?;
-        Ok(flash::exclusive(|| omnimotion_sim::hal::nvs_get(namespace, key)))
+        Ok(flash::exclusive(|| {
+            omnimotion_sim::hal::nvs_get(namespace, key)
+        }))
     }
 }
 
 fn names(namespace: &str, key: &str) -> Result<(), StorageError> {
-    if namespace.len() > MAX_NAME_LEN || key.len() > MAX_NAME_LEN {
+    if !names_fit(namespace, key) {
         return Err(StorageError::NameTooLong);
     }
     Ok(())

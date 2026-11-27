@@ -2,11 +2,10 @@
 
 use std::task::{Poll, Waker};
 
+use omnimotion::devices::power::MOTOR_RATIO;
+
 use crate::hw::{self, Pull, DIAG, DRV_EN, ENDSTOPS, ESTOP};
 use crate::{clock, log, tmc, with, World};
-
-/// VMOTOR reaches the VMON pin through a 100k/10k divider (Omnimotion's `devices::power`).
-const VMON_RATIO: f64 = 11.0;
 
 pub fn gpio_out() -> u64 {
     with(|w| w.hw.out)
@@ -66,7 +65,7 @@ pub fn input(pin: u8) -> bool {
 pub fn vmon_mv() -> u16 {
     with(|w| {
         if w.env.supply_on {
-            (w.board.supply_v * 1000.0 / VMON_RATIO) as u16
+            (w.board.supply_v * 1000.0 / f64::from(MOTOR_RATIO)) as u16
         } else {
             0
         }
@@ -78,8 +77,9 @@ pub fn uart_write(bytes: &[u8]) {
     with(|w| {
         let out = w.hw.out;
         let enabled = w.drivers.enabled;
-        w.drivers.transmit(bytes, now, |axis| tmc::Io {
-            enabled,
+        w.drivers.transmit(bytes, now, |axis| tmc::Pins {
+            disabled: !enabled,
+            diag: false,
             step: out & (1 << hw::STEP[axis]) != 0,
             dir: out & (1 << hw::DIR[axis]) != 0,
         });

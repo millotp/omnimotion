@@ -5,10 +5,10 @@ use omnimotion::devices::check::{
     read_endstops, BoardReport, DriverCheck, DriverResult, DriverSamples,
 };
 use omnimotion::devices::power::PowerSource;
-use omnimotion::devices::tmc2209::{Driver, ADDRESSES, VERSION};
+use omnimotion::devices::tmc2209::{Driver, ADDRESSES};
 use omnimotion::AXES;
 
-use crate::diag::inventory;
+use crate::diag::inventory::{self, DriverPresence};
 use crate::motion::supervisor::endstop_levels;
 use crate::Board;
 
@@ -65,12 +65,12 @@ impl Board {
             faults,
             ..
         } = self;
-        let mut driver = Driver::new(tmc, address);
-        match driver.version().await {
-            Ok(VERSION) => {}
-            Ok(other) => return Ok(DriverResult::Mismatched(other)),
-            Err(_) => return Ok(DriverResult::Silent),
+        match inventory::probe(tmc, address).await {
+            DriverPresence::Responding => {}
+            DriverPresence::Mismatched(version) => return Ok(DriverResult::Mismatched(version)),
+            DriverPresence::Missing => return Ok(DriverResult::Silent),
         }
+        let mut driver = Driver::new(tmc, address);
 
         let mut lines = motion.hold_lines(axis).ok_or(CheckError::MotionActive)?;
         lines.drive(false, false);

@@ -1,16 +1,11 @@
+mod common;
+
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use embedded_hal_async::delay::DelayNs;
+use common::Impatient;
 use omnimotion::devices::check::{DriverCheck, DriverSamples, Temperature};
 use omnimotion::devices::tmc2209::emulator::{StepDir, TmcEmulator};
 use omnimotion::devices::tmc2209::{Bus, Driver, DriverConfig, Error, ADDRESSES, VERSION};
-
-/// A deadline that has always already passed: whatever is not on the wire already is not coming.
-struct Impatient;
-
-impl DelayNs for Impatient {
-    async fn delay_ns(&mut self, _ns: u32) {}
-}
 
 fn bus() -> Bus<TmcEmulator, Impatient> {
     Bus::new(TmcEmulator::new([true, true, false]), Impatient)

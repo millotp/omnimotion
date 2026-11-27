@@ -1,9 +1,14 @@
+mod common;
+
 use std::collections::{HashMap, VecDeque};
+
+use common::Impatient;
 use std::convert::Infallible;
 
 use embedded_hal_async::delay::DelayNs;
 use embedded_io::ErrorType;
 use embedded_io_async::{Read, Write};
+use omnimotion::devices::tmc2209::wire::{self, Pins, Request, GSTAT_FLAGS};
 use omnimotion::devices::tmc2209::{
     current_scale, current_scales, microstep_resolution, tstep_for_rate, Bus, ConfigError, Driver,
     DriverConfig, Error, MicroStepResolution, R_SENSE, VERSION,
@@ -18,13 +23,6 @@ impl DelayNs for Patient {
     async fn delay_ns(&mut self, _ns: u32) {
         core::future::pending().await
     }
-}
-
-/// A deadline that has always already passed.
-struct Impatient;
-
-impl DelayNs for Impatient {
-    async fn delay_ns(&mut self, _ns: u32) {}
 }
 
 fn bus(address: u8) -> Bus<Wire, Patient> {
@@ -49,8 +47,14 @@ struct Wire {
 impl Wire {
     fn new(address: u8) -> Self {
         let mut registers = HashMap::new();
-        registers.insert(reg::Address::IOIN as u8, (VERSION as u32) << 24);
-        registers.insert(reg::Address::CHOPCONF as u8, 0x1000_0053);
+        registers.insert(
+            reg::Address::IOIN as u8,
+            wire::ioin(address, Pins::default()),
+        );
+        registers.insert(
+            reg::Address::CHOPCONF as u8,
+            wire::power_on(reg::Address::CHOPCONF),
+        );
         registers.insert(reg::Address::IFCNT as u8, 0);
         Self {
             address,
@@ -71,13 +75,7 @@ impl Wire {
         self.replies += 1;
         *self.read_counts.entry(register).or_default() += 1;
 
-        let mut frame = [0u8; 8];
-        frame[0] = tmc2209::SYNC_AND_RESERVED;
-        frame[1] = tmc2209::MASTER_ADDR;
-        frame[2] = register;
-        frame[3..7].copy_from_slice(&data.to_be_bytes());
-        frame[7] = tmc2209::crc(&frame[..7]);
-
+        let mut frame = wire::reply(register, data);
         if self.corrupt_replies > 0 {
             self.corrupt_replies -= 1;
             frame[7] ^= 0xFF;
@@ -117,23 +115,24 @@ impl Write for Wire {
             self.rx.extend(buffer);
         }
 
-        let addressed_to_us = buffer.get(1) == Some(&self.address);
-        match buffer.len() {
-            4 if addressed_to_us => {
-                let register = buffer[2] & 0x7F;
+        match wire::next_request(buffer).1 {
+            Some(Request::Read { address, register }) if address == self.address => {
                 self.reply(register);
             }
-            8 if addressed_to_us => {
-                let register = buffer[2] & 0x7F;
+            Some(Request::Write {
+                address,
+                register,
+                value,
+            }) if address == self.address => {
                 if self.dropped_writes > 0 {
                     self.dropped_writes -= 1;
                 } else {
-                    let data = u32::from_be_bytes([buffer[3], buffer[4], buffer[5], buffer[6]]);
                     if register == reg::Address::GSTAT as u8 {
                         let previous = self.registers.get(&register).copied().unwrap_or(0);
-                        self.registers.insert(register, previous & !data);
+                        self.registers
+                            .insert(register, previous & !(value & GSTAT_FLAGS));
                     } else {
-                        self.registers.insert(register, data);
+                        self.registers.insert(register, value);
                     }
                     self.write_order.push(register);
                     let ifcnt = self.registers[&(reg::Address::IFCNT as u8)] as u8;
@@ -249,7 +248,10 @@ fn take_reset_reports_a_reset_once() {
 
     let (first, second) = pollster::block_on(async {
         let mut driver = Driver::new(&mut bus, 0);
-        (driver.take_reset().await.unwrap(), driver.take_reset().await.unwrap())
+        (
+            driver.take_reset().await.unwrap(),
+            driver.take_reset().await.unwrap(),
+        )
     });
 
     assert!(first);

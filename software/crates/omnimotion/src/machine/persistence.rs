@@ -2,6 +2,14 @@ use crc::{Crc, CRC_32_ISO_HDLC};
 
 use crate::LifecycleState;
 
+/// The NVS limit on a key or namespace, excluding the null terminator.
+pub const MAX_NAME_LEN: usize = 15;
+
+/// Whether NVS can store under `namespace` and `key`; `esp-nvs` panics on longer names.
+pub fn names_fit(namespace: &str, key: &str) -> bool {
+    namespace.len() <= MAX_NAME_LEN && key.len() <= MAX_NAME_LEN
+}
+
 const MAGIC: [u8; 4] = *b"OMNI";
 const HEADER_LEN: usize = 24;
 const CRC_OFFSET: usize = 20;

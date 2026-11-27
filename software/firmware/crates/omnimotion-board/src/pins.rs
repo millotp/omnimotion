@@ -30,9 +30,6 @@ pub const OLED_ADDRESSES: [u8; 2] = [0x3C, 0x3D];
 
 pub const I2C_HZ: u32 = 400_000;
 
-/// The TMC2209 allows 500 kbit/s; 115200 leaves margin on a bus shared by three.
-pub const TMC_BAUD: u32 = 115_200;
-
 /// Everything `Board::new` claims, bundled so it can be moved onto whichever
 /// core runs the board. Built by [`crate::split!`], which ties every field to the copper.
 pub struct BoardPins {

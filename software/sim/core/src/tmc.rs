@@ -2,28 +2,30 @@
 //! microstep sequencer, current regulation and the datagram protocol with its echo and timing.
 
 use std::collections::VecDeque;
-use std::f64::consts::{PI, SQRT_2};
+use std::f64::consts::PI;
 use std::task::{Poll, Waker};
 
-use omnimotion::devices::tmc2209::{R_SENSE, VERSION};
+use omnimotion::devices::tmc2209::reg::{self, Address};
+pub use omnimotion::devices::tmc2209::wire::Pins;
+use omnimotion::devices::tmc2209::wire::{self, Request, GSTAT_FLAGS};
+pub use omnimotion::devices::tmc2209::BAUD;
+use omnimotion::devices::tmc2209::R_SENSE;
 use serde::{Deserialize, Serialize};
+use tmc2209::INTERNAL_CLOCK_HZ;
 
 use crate::clock;
 
-pub const BAUD: f64 = 115_200.0;
-const BIT_NS: f64 = 1e9 / BAUD;
+const BIT_NS: f64 = 1e9 / BAUD as f64;
 const BYTE_NS: u64 = (10.0 * BIT_NS) as u64;
-/// Standstill is flagged 2^20 clocks after the last step (12 MHz internal clock).
-const STANDSTILL_US: u64 = 87_381;
+/// Standstill is flagged 2^20 clocks after the last step.
+const STANDSTILL_US: u64 = ((1u32 << 20) as f32 / INTERNAL_CLOCK_HZ * 1e6) as u64;
 /// TPOWERDOWN counts in 2^18 clocks.
-const POWERDOWN_UNIT_US: u64 = 21_845;
+const POWERDOWN_UNIT_US: u64 = ((1u32 << 18) as f32 / INTERNAL_CLOCK_HZ * 1e6) as u64;
 /// i_scale_analog = 1 (the reset value) scales the sense voltage by VREF / 2.5 V; VREF comes from the
 /// board's 33k/10k divider on 3.3 V.
 const ANALOG_SCALE: f64 = 0.767 / 2.5;
 /// The ESP32-S3 UART's receive FIFO, bytes.
 const RX_FIFO: usize = 128;
-/// Longest datagram: a write request.
-const DATAGRAM: usize = 8;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Chip {
@@ -69,32 +71,27 @@ impl Chip {
         chip
     }
 
-    /// Power-on reset values from the datasheet.
     fn reset(&mut self, now: u64) {
-        self.gconf = 0x0000_0101;
-        self.gstat = 0x1;
+        self.gconf = wire::power_on(Address::GCONF);
+        self.gstat = wire::power_on(Address::GSTAT);
         self.ifcnt = 0;
-        self.slaveconf = 0;
-        self.ihold_irun = 0x0000_1F10;
-        self.tpowerdown = 20;
-        self.chopconf = 0x1000_0053;
+        self.slaveconf = wire::power_on(Address::SLAVECONF);
+        self.ihold_irun = wire::power_on(Address::IHOLD_IRUN);
+        self.tpowerdown = wire::power_on(Address::TPOWERDOWN);
+        self.chopconf = wire::power_on(Address::CHOPCONF);
         self.counts = 0;
         self.power_ons += 1;
         self.last_step = None;
         self.powered_at = now;
     }
 
-    fn mstep_reg_select(&self) -> bool {
-        self.gconf & (1 << 7) != 0
-    }
-
     pub fn shaft(&self) -> bool {
-        self.gconf & (1 << 3) != 0
+        reg::GCONF(self.gconf).shaft()
     }
 
     /// Microsteps per full step: CHOPCONF.MRES, or the MS1/MS2 address straps until mstep_reg_select.
     pub fn microsteps(&self) -> u32 {
-        if self.mstep_reg_select() {
+        if reg::GCONF(self.gconf).mstep_reg_select() {
             256 >> ((self.chopconf >> 24) & 0xF).min(8)
         } else {
             match self.address & 3 {
@@ -113,9 +110,9 @@ impl Chip {
         }
     }
 
-    fn current_scale(&self, now: u64) -> u32 {
-        let ihold = self.ihold_irun & 0x1F;
-        let irun = (self.ihold_irun >> 8) & 0x1F;
+    fn current_scale(&self, now: u64) -> u8 {
+        let currents = reg::IHOLD_IRUN(self.ihold_irun);
+        let (ihold, irun) = (currents.ihold(), currents.irun());
         let since = self.last_step.unwrap_or(self.powered_at);
         let idle = now.saturating_sub(since);
         if self.standstill(now)
@@ -132,18 +129,14 @@ impl Chip {
         if !self.fitted || !self.powered || !enabled {
             return 0.0;
         }
-        let full_scale = if self.chopconf & (1 << 17) != 0 {
-            0.180
-        } else {
-            0.325
-        };
-        let analog = if self.gconf & 1 != 0 {
+        let analog = if reg::GCONF(self.gconf).i_scale_analog() {
             ANALOG_SCALE
         } else {
             1.0
         };
-        let cs = f64::from(self.current_scale(now));
-        (cs + 1.0) / 32.0 * full_scale * analog / (f64::from(R_SENSE) + 0.02) / SQRT_2
+        let vsense = reg::CHOPCONF(self.chopconf).vsense();
+        let ma = tmc2209::vsense_cs_to_rms_current(R_SENSE, vsense, self.current_scale(now));
+        f64::from(ma) / 1000.0 * analog
     }
 
     /// Electrical angle the coil currents point at, radians (positive turns the shaft positive).
@@ -168,42 +161,38 @@ impl Chip {
         self.last_step = Some(now);
     }
 
-    fn read(&self, register: u8, io: Io, now: u64) -> u32 {
+    fn read(&self, register: u8, pins: Pins, now: u64) -> u32 {
+        let Ok(register) = Address::try_from(register) else {
+            return 0;
+        };
         match register {
-            0x00 => self.gconf,
-            0x01 => self.gstat,
-            0x02 => u32::from(self.ifcnt),
-            0x06 => {
-                u32::from(!io.enabled)
-                    | u32::from(self.address & 1) << 2
-                    | u32::from((self.address >> 1) & 1) << 3
-                    | 1 << 6
-                    | u32::from(io.step) << 7
-                    | u32::from(io.dir) << 9
-                    | u32::from(VERSION) << 24
-            }
-            0x12 => {
+            Address::GCONF => self.gconf,
+            Address::GSTAT => self.gstat,
+            Address::IFCNT => u32::from(self.ifcnt),
+            Address::IOIN => wire::ioin(self.address, pins),
+            Address::TSTEP => {
                 if self.standstill(now) {
-                    0xF_FFFF
+                    wire::power_on(Address::TSTEP)
                 } else {
-                    let per_256 =
-                        self.step_interval as f64 * 12.0 / f64::from(256 / self.microsteps());
-                    (per_256 as u32).min(0xF_FFFF)
+                    let clocks_per_us = f64::from(INTERNAL_CLOCK_HZ) / 1e6;
+                    let per_256 = self.step_interval as f64 * clocks_per_us
+                        / f64::from(256 / self.microsteps());
+                    (per_256 as u32).min(wire::power_on(Address::TSTEP))
                 }
             }
-            0x41 => {
+            Address::SG_RESULT => {
                 if self.standstill(now) {
                     0
                 } else {
                     300
                 }
             }
-            0x6C => self.chopconf,
-            0x6F => {
-                let stealth = self.gconf & (1 << 2) == 0;
+            Address::CHOPCONF => self.chopconf,
+            Address::DRV_STATUS => {
+                let stealth = !reg::GCONF(self.gconf).en_spread_cycle();
                 u32::from(self.standstill(now)) << 31
                     | u32::from(stealth) << 30
-                    | (self.current_scale(now) & 0x1F) << 16
+                    | u32::from(self.current_scale(now)) << 16
             }
             _ => 0,
         }
@@ -212,13 +201,13 @@ impl Chip {
     /// Registers the model does not use (TPWMTHRS, TCOOLTHRS, SGTHRS, COOLCONF, PWMCONF) are accepted and
     /// counted, but not kept: nothing reads them back.
     fn write(&mut self, register: u8, value: u32) {
-        match register {
-            0x00 => self.gconf = value & 0x3FF,
-            0x01 => self.gstat &= !(value & 0x7),
-            0x03 => self.slaveconf = value & 0xF00,
-            0x10 => self.ihold_irun = value & 0x000F_1F1F,
-            0x11 => self.tpowerdown = value & 0xFF,
-            0x6C => self.chopconf = value,
+        match Address::try_from(register) {
+            Ok(Address::GCONF) => self.gconf = value & 0x3FF,
+            Ok(Address::GSTAT) => self.gstat &= !(value & GSTAT_FLAGS),
+            Ok(Address::SLAVECONF) => self.slaveconf = value & 0xF00,
+            Ok(Address::IHOLD_IRUN) => self.ihold_irun = value & 0x000F_1F1F,
+            Ok(Address::TPOWERDOWN) => self.tpowerdown = value & 0xFF,
+            Ok(Address::CHOPCONF) => self.chopconf = value,
             _ => {}
         }
         self.ifcnt = self.ifcnt.wrapping_add(1);
@@ -229,14 +218,6 @@ impl Chip {
         let n = (self.slaveconf >> 8) & 0xF;
         8.0 * f64::from(2 * (n / 2) + 1)
     }
-}
-
-/// Levels of the pins a driver can see in IOIN.
-#[derive(Clone, Copy)]
-pub struct Io {
-    pub enabled: bool,
-    pub step: bool,
-    pub dir: bool,
 }
 
 /// More bytes arrived than the receive FIFO holds before the MCU read them; the FIFO was reset.
@@ -285,8 +266,8 @@ impl Drivers {
         self.chips[axis].step(forward, now);
     }
 
-    /// Bytes written by the MCU at `now`; `io` gives the pin levels each driver sees.
-    pub fn transmit(&mut self, bytes: &[u8], now: u64, io: impl Fn(usize) -> Io) {
+    /// Bytes written by the MCU at `now`; `pins` gives the pin levels each driver sees.
+    pub fn transmit(&mut self, bytes: &[u8], now: u64, pins: impl Fn(usize) -> Pins) {
         let line = &mut self.line;
         for &byte in bytes {
             let start = (now * 1000).max(line.busy_ns);
@@ -295,57 +276,35 @@ impl Drivers {
             line.tx_done_ns = end;
             line.rx.push_back((end.div_ceil(1000), byte));
             line.request.push(byte);
-            if line.request[0] != tmc2209::SYNC_AND_RESERVED {
-                line.request.remove(0);
+            let (used, request) = wire::next_request(&line.request);
+            line.request.drain(..used);
+            let Some(
+                request @ (Request::Read { address, register }
+                | Request::Write {
+                    address, register, ..
+                }),
+            ) = request
+            else {
                 continue;
-            }
-            let len = match line.request.get(2) {
-                Some(r) if r & 0x80 != 0 => DATAGRAM,
-                Some(_) => 4,
-                None => continue,
             };
-            if line.request.len() < len {
-                continue;
-            }
-            let mut request = [0u8; DATAGRAM];
-            request[..len].copy_from_slice(&line.request[..len]);
-            line.request.drain(..len);
-            if tmc2209::crc(&request[..len - 1]) != request[len - 1] {
-                continue;
-            }
             let Some(index) = self
                 .chips
                 .iter()
-                .position(|c| c.address == request[1] && c.fitted && c.powered)
+                .position(|c| c.address == address && c.fitted && c.powered)
             else {
                 continue;
             };
             let chip = &mut self.chips[index];
-            let register = request[2] & 0x7F;
-            if len == DATAGRAM {
-                chip.write(
-                    register,
-                    u32::from_be_bytes([request[3], request[4], request[5], request[6]]),
-                );
-            } else {
-                let value = chip.read(register, io(index), now);
-                let mut reply = [
-                    tmc2209::SYNC_AND_RESERVED,
-                    tmc2209::MASTER_ADDR,
-                    register,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                ];
-                reply[3..7].copy_from_slice(&value.to_be_bytes());
-                reply[7] = tmc2209::crc(&reply[..7]);
-                let mut t = end + (chip.send_delay_bits() * BIT_NS) as u64;
-                for b in reply {
-                    t = t.max(line.busy_ns) + BYTE_NS;
-                    line.busy_ns = t;
-                    line.rx.push_back((t.div_ceil(1000), b));
+            match request {
+                Request::Write { value, .. } => chip.write(register, value),
+                Request::Read { .. } => {
+                    let value = chip.read(register, pins(index), now);
+                    let mut t = end + (chip.send_delay_bits() * BIT_NS) as u64;
+                    for b in wire::reply(register, value) {
+                        t = t.max(line.busy_ns) + BYTE_NS;
+                        line.busy_ns = t;
+                        line.rx.push_back((t.div_ceil(1000), b));
+                    }
                 }
             }
         }

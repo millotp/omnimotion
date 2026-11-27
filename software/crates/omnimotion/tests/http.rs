@@ -1,5 +1,5 @@
 use omnimotion::net::http::{
-    constant_time_equal, head_end, normalized_path, parse_head, Head, HeadError, PATH_LIMIT,
+    constant_time_equal, head_end, normalized_path, parse_head, Head, RequestError, PATH_LIMIT,
 };
 
 #[test]
@@ -34,7 +34,7 @@ fn heads_give_the_route_length_and_key() {
     assert!(!get.authorized);
     assert_eq!(get.body_length(), Ok(0));
     let post = parse_head(b"POST /stop HTTP/1.1\r\n\r\n", b"secret").unwrap();
-    assert_eq!(post.body_length(), Err(HeadError::LengthRequired));
+    assert_eq!(post.body_length(), Err(RequestError::LengthRequired));
 }
 
 #[test]
@@ -50,7 +50,7 @@ fn chunked_bodies_need_a_length() {
             b"POST /weave HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n",
             b"k"
         ),
-        Err(HeadError::LengthRequired)
+        Err(RequestError::LengthRequired)
     );
 }
 
@@ -69,12 +69,15 @@ fn malformed_heads_are_refused() {
     ] {
         assert_eq!(
             parse_head(head, b"k"),
-            Err(HeadError::Malformed),
+            Err(RequestError::Malformed),
             "{head:?}"
         );
     }
     let long = format!("GET /{} HTTP/1.1\r\n\r\n", "a".repeat(PATH_LIMIT));
-    assert_eq!(parse_head(long.as_bytes(), b"k"), Err(HeadError::Malformed));
+    assert_eq!(
+        parse_head(long.as_bytes(), b"k"),
+        Err(RequestError::Malformed)
+    );
 }
 
 #[test]

@@ -109,6 +109,29 @@ fn an_active_stop_waits_for_abort_acknowledgement() {
 }
 
 #[test]
+fn an_interrupted_pause_or_stop_completes_in_one_call() {
+    for interrupted in [false, true] {
+        let mut job = Lifecycle::new();
+        job.start(2).unwrap();
+        if interrupted {
+            job.begin_operation().unwrap();
+        }
+        assert_eq!(job.request_pause(), Ok(interrupted));
+        job.pause_interrupted().unwrap();
+        assert_eq!(job.state(), LifecycleState::Paused);
+        assert_eq!(job.progress().unwrap().completed, 0);
+
+        job.resume().unwrap();
+        if interrupted {
+            job.begin_operation().unwrap();
+        }
+        assert_eq!(job.request_stop(), Ok(interrupted));
+        job.stop_interrupted().unwrap();
+        assert_eq!(job.state(), LifecycleState::Idle);
+    }
+}
+
+#[test]
 fn faults_cannot_be_resumed_and_recovery_clears_progress() {
     let mut job = Lifecycle::new();
     job.start(2).unwrap();
@@ -154,7 +177,10 @@ fn a_restored_job_runs_from_its_checkpoint() {
     assert_eq!(job.state(), LifecycleState::Running);
     assert_eq!(job.progress(), Some(checkpoint));
     assert_eq!(job.begin_operation(), Ok(3));
-    assert_eq!(job.restore(checkpoint), Err(LifecycleError::InvalidTransition));
+    assert_eq!(
+        job.restore(checkpoint),
+        Err(LifecycleError::InvalidTransition)
+    );
 
     let finished = JobProgress {
         completed: 5,

@@ -18,17 +18,23 @@ pub struct Limits {
 
 impl Limits {
     pub fn validate(&self) -> Result<(), LimitsError> {
-        if !self.max_rate.is_finite() || !self.min_rate.is_finite() || !self.accel.is_finite() {
-            return Err(LimitsError::NonFinite);
-        }
-        if self.max_rate <= 0.0 || self.min_rate <= 0.0 || self.accel <= 0.0 {
-            return Err(LimitsError::NonPositive);
-        }
-        if self.min_rate > self.max_rate {
-            return Err(LimitsError::MinimumExceedsMaximum);
-        }
-        Ok(())
+        check_rates(&[self.max_rate, self.accel], self.min_rate, self.max_rate)
     }
+}
+
+/// `values`, `min` and `max` all finite and positive, and `min` at most `max`.
+pub(crate) fn check_rates(values: &[f32], min: f32, max: f32) -> Result<(), LimitsError> {
+    let all = || values.iter().chain([&min, &max]);
+    if !all().all(|value| value.is_finite()) {
+        return Err(LimitsError::NonFinite);
+    }
+    if !all().all(|&value| value > 0.0) {
+        return Err(LimitsError::NonPositive);
+    }
+    if min > max {
+        return Err(LimitsError::MinimumExceedsMaximum);
+    }
+    Ok(())
 }
 
 pub trait Profile {

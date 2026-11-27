@@ -18,7 +18,7 @@ use esp_bootloader_esp_idf::partitions::{
 };
 use esp_hal::peripherals::FLASH;
 use esp_storage::FlashStorage;
-use omnimotion::update::ota::{check_image_header, ImageError};
+use omnimotion::update::ota::{check_image_header, ImageError, Upload};
 use omnimotion::update::web::is_nvs_page;
 
 use crate::storage;
@@ -34,13 +34,38 @@ const OTA_SLOTS: usize = 2;
 pub(crate) enum OtaError {
     /// A move is running, or another update holds the flash.
     Busy,
+    /// An app image larger than its slot.
     TooLarge,
     Image(ImageError),
+    /// A web image that is not the size of the web partition.
+    WrongSize,
+    /// A web image page is not NVS, so it was not written. Earlier pages
+    /// already were.
+    NotAnNvsPage,
     /// The body ended before the length it announced.
     Truncated,
-    /// The table lacks otadata or the OTA slots, or otadata is unreadable.
+    /// The table lacks otadata, the OTA slots or the web partition, or otadata
+    /// is unreadable.
     Partitions,
     Flash,
+}
+
+impl OtaError {
+    pub(crate) fn response(&self) -> (u16, &'static str) {
+        match self {
+            Self::Busy => (409, "a move is running; stop it first"),
+            Self::TooLarge => (413, "image larger than its slot"),
+            Self::Image(ImageError::WrongChip(_)) => (422, "image built for another chip"),
+            Self::Image(_) => (422, "not an app image; send espflash save-image output"),
+            Self::WrongSize => (
+                422,
+                "not the size of the web partition; send pack_web.py output",
+            ),
+            Self::NotAnNvsPage => (422, "not NVS pages; send pack_web.py output"),
+            Self::Truncated => (400, "body shorter than Content-Length"),
+            Self::Partitions | Self::Flash => (500, "flash error"),
+        }
+    }
 }
 
 impl From<partitions::Error> for OtaError {
@@ -108,47 +133,44 @@ impl Ota {
         self.mark_booted(OtaImageState::Invalid)
     }
 
-    /// Claims the web partition for an image of exactly its size. Moves fail
-    /// with `Busy` until the returned `WebUpdate` is dropped.
-    pub(crate) fn begin_web(&mut self, length: usize) -> Result<WebUpdate<'_>, WebError> {
-        let lease = Lease::try_upload().ok_or(WebError::Busy)?;
-        let Self { flash, .. } = self;
-        let (offset, size) = flash::exclusive(|| storage::nvs_partition(flash, PARTITION_LABEL))
-            .map_err(|_| WebError::Partitions)?;
-        if length != size {
-            return Err(WebError::WrongSize);
-        }
-        Ok(WebUpdate {
-            ota: self,
-            _lease: lease,
-            offset: offset as u32,
-            length,
-            received: 0,
-        })
-    }
-
-    /// Claims the inactive slot for an image of `length` bytes. Moves fail
-    /// with `Busy` until the returned `Update` is dropped.
-    pub(crate) fn begin(&mut self, length: usize) -> Result<Update<'_>, OtaError> {
-        if length == 0 {
-            return Err(OtaError::Image(ImageError::TooShort));
-        }
+    /// Claims the inactive app slot, or the web partition for an image of
+    /// exactly its size. Moves fail with `Busy` until the returned `Update` is
+    /// dropped.
+    pub(crate) fn begin(&mut self, upload: Upload) -> Result<Update<'_>, OtaError> {
         let lease = Lease::try_upload().ok_or(OtaError::Busy)?;
         let Self { flash, table, .. } = self;
-        let (target, offset, capacity) = flash::exclusive(|| {
-            let table = partitions::read_partition_table(flash, table)?;
-            let target = match booted(&table)? {
-                AppPartitionSubType::Ota0 => AppPartitionSubType::Ota1,
-                _ => AppPartitionSubType::Ota0,
-            };
-            let entry = table
-                .find_partition(PartitionType::App(target))?
-                .ok_or(partitions::Error::Invalid)?;
-            Ok::<_, partitions::Error>((target, entry.offset(), entry.len() as usize))
-        })?;
-        if length > capacity {
-            return Err(OtaError::TooLarge);
-        }
+        let length = upload.length();
+        let (target, offset) = match upload {
+            Upload::App(_) => {
+                if length == 0 {
+                    return Err(OtaError::Image(ImageError::TooShort));
+                }
+                let (slot, offset, capacity) = flash::exclusive(|| {
+                    let table = partitions::read_partition_table(flash, table)?;
+                    let slot = match booted(&table)? {
+                        AppPartitionSubType::Ota0 => AppPartitionSubType::Ota1,
+                        _ => AppPartitionSubType::Ota0,
+                    };
+                    let entry = table
+                        .find_partition(PartitionType::App(slot))?
+                        .ok_or(partitions::Error::Invalid)?;
+                    Ok::<_, partitions::Error>((slot, entry.offset(), entry.len() as usize))
+                })?;
+                if length > capacity {
+                    return Err(OtaError::TooLarge);
+                }
+                (Target::App(slot), offset)
+            }
+            Upload::Web(_) => {
+                let (offset, size) =
+                    flash::exclusive(|| storage::nvs_partition(flash, PARTITION_LABEL))
+                        .map_err(|_| OtaError::Partitions)?;
+                if length != size {
+                    return Err(OtaError::WrongSize);
+                }
+                (Target::Web, offset as u32)
+            }
+        };
         Ok(Update {
             ota: self,
             _lease: lease,
@@ -201,74 +223,17 @@ fn booted(table: &PartitionTable<'_>) -> Result<AppPartitionSubType, partitions:
     }
 }
 
-#[derive(Debug)]
-pub(crate) enum WebError {
-    /// A move is running, or another update holds the flash.
-    Busy,
-    /// The image is not the size of the web partition.
-    WrongSize,
-    /// A page is not NVS, so it was not written. Earlier pages already were.
-    NotAnNvsPage,
-    /// The body ended before the length it announced.
-    Truncated,
-    Partitions,
-    Flash,
+#[derive(Clone, Copy)]
+enum Target {
+    App(AppPartitionSubType),
+    Web,
 }
 
-/// An image being streamed into the web partition, one erased page at a time.
-pub(crate) struct WebUpdate<'a> {
-    ota: &'a mut Ota,
-    _lease: Lease,
-    offset: u32,
-    length: usize,
-    received: usize,
-}
-
-impl WebUpdate<'_> {
-    pub(crate) fn write(&mut self, mut bytes: &[u8]) -> Result<(), WebError> {
-        if bytes.len() > self.length - self.received {
-            return Err(WebError::WrongSize);
-        }
-        while !bytes.is_empty() {
-            let filled = self.received % SECTOR;
-            let take = bytes.len().min(SECTOR - filled);
-            self.ota.sector[filled..filled + take].copy_from_slice(&bytes[..take]);
-            self.received += take;
-            bytes = &bytes[take..];
-            if self.received.is_multiple_of(SECTOR) {
-                self.flush()?;
-            }
-        }
-        Ok(())
-    }
-
-    pub(crate) fn finish(self) -> Result<(), WebError> {
-        if self.received != self.length {
-            return Err(WebError::Truncated);
-        }
-        Ok(())
-    }
-
-    fn flush(&mut self) -> Result<(), WebError> {
-        let start = self.received - SECTOR;
-        let Ota { flash, sector, .. } = &mut *self.ota;
-        if !is_nvs_page(&sector[..]) {
-            return Err(WebError::NotAnNvsPage);
-        }
-        let address = self.offset + start as u32;
-        flash::exclusive(|| {
-            flash.erase(address, address + SECTOR as u32)?;
-            flash.write(address, &sector[..])
-        })
-        .map_err(|_| WebError::Flash)
-    }
-}
-
-/// An image being streamed into the inactive slot, one erased sector at a time.
+/// An image being streamed into its partition, one erased sector at a time.
 pub(crate) struct Update<'a> {
     ota: &'a mut Ota,
     _lease: Lease,
-    target: AppPartitionSubType,
+    target: Target,
     offset: u32,
     length: usize,
     received: usize,
@@ -292,19 +257,21 @@ impl Update<'_> {
         Ok(())
     }
 
-    /// Selects the new image for the next boot, as `New` so it gets a trial.
+    /// An app image is selected for the next boot, as `New` so it gets a trial.
     pub(crate) fn finish(self) -> Result<(), OtaError> {
         if self.received != self.length {
             return Err(OtaError::Truncated);
         }
-        let target = self.target;
+        let Target::App(slot) = self.target else {
+            return Ok(());
+        };
         self.ota.with_otadata(|otadata, booted| {
             // Blank otadata reads as the factory slot, which this table lacks.
             // Pinning the running slot first keeps the sequence arithmetic sane.
             if otadata.current_app_partition()? == AppPartitionSubType::Factory {
                 otadata.set_current_app_partition(booted)?;
             }
-            otadata.set_current_app_partition(target)?;
+            otadata.set_current_app_partition(slot)?;
             otadata.set_current_ota_state(OtaImageState::New)
         })
     }
@@ -316,8 +283,13 @@ impl Update<'_> {
         };
         let start = self.received - filled;
         let Ota { flash, sector, .. } = &mut *self.ota;
-        if start == 0 {
-            check_image_header(&sector[..filled]).map_err(OtaError::Image)?;
+        match self.target {
+            Target::App(_) if start == 0 => {
+                check_image_header(&sector[..filled]).map_err(OtaError::Image)?
+            }
+            Target::App(_) => {}
+            Target::Web if !is_nvs_page(&sector[..filled]) => return Err(OtaError::NotAnNvsPage),
+            Target::Web => {}
         }
         let padded = filled.next_multiple_of(WORD);
         sector[filled..padded].fill(0xFF);

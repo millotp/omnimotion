@@ -71,9 +71,7 @@ impl TransactionalStore {
         &mut self,
         spec: RecordSpec<'_>,
     ) -> Result<StoredRecord<Vec<u8>>, PersistenceError> {
-        let (key_a, key_b) = slot_keys(spec.base_key)?;
-        let slot_a = self.store.read_blob(spec.namespace, &key_a)?;
-        let slot_b = self.store.read_blob(spec.namespace, &key_b)?;
+        let (_, [slot_a, slot_b]) = self.read_slots(spec)?;
         let selected = select_latest(
             slot_a.as_deref(),
             slot_b.as_deref(),
@@ -97,9 +95,7 @@ impl TransactionalStore {
             .persistence_gate(lifecycle)
             .check()
             .map_err(PersistenceError::WriteRefused)?;
-        let (key_a, key_b) = slot_keys(spec.base_key)?;
-        let slot_a = self.store.read_blob(spec.namespace, &key_a)?;
-        let slot_b = self.store.read_blob(spec.namespace, &key_b)?;
+        let ([key_a, key_b], [slot_a, slot_b]) = self.read_slots(spec)?;
         let pending = prepare_write(
             slot_a.as_deref(),
             slot_b.as_deref(),
@@ -149,9 +145,20 @@ impl TransactionalStore {
     pub fn into_inner(self) -> Store {
         self.store
     }
+
+    /// The record's two slot keys and what each holds.
+    fn read_slots(&mut self, spec: RecordSpec<'_>) -> Result<Slots, PersistenceError> {
+        let (key_a, key_b) = slot_keys(spec.base_key)?;
+        let slot_a = self.store.read_blob(spec.namespace, &key_a)?;
+        let slot_b = self.store.read_blob(spec.namespace, &key_b)?;
+        Ok(([key_a, key_b], [slot_a, slot_b]))
+    }
 }
 
-fn slot_keys(base: &str) -> Result<(String<MAX_NAME_LEN>, String<MAX_NAME_LEN>), StorageError> {
+type SlotKey = String<MAX_NAME_LEN>;
+type Slots = ([SlotKey; 2], [Option<Vec<u8>>; 2]);
+
+fn slot_keys(base: &str) -> Result<(SlotKey, SlotKey), StorageError> {
     if base.len() + 1 > MAX_NAME_LEN {
         return Err(StorageError::NameTooLong);
     }

@@ -23,10 +23,10 @@ use esp_hal::system::software_reset;
 use esp_radio::wifi::sta::StationConfig;
 use esp_radio::wifi::{Config as WifiConfig, ControllerConfig, Interface, WifiController};
 use heapless::String;
-use omnimotion::update::ota::{parse_upload, ImageError, Upload};
+use omnimotion::update::ota::{parse_upload, Upload};
 use static_cell::StaticCell;
 
-use crate::net::ota::{Boot, Ota, OtaError, WebError};
+use crate::net::ota::{Boot, Ota, OtaError};
 use crate::storage::flash::Lease;
 
 const SSID: &str = match option_env!("OMNIMOTION_WIFI_SSID") {
@@ -164,25 +164,17 @@ async fn updates(stack: Stack<'static>, ota: &'static mut Ota, boot: Boot) {
 async fn serve(socket: &mut TcpSocket<'_>, ota: &mut Ota) -> bool {
     let mut buffer = [0; HEAD_LIMIT];
     let outcome = match http::read_head(socket, &mut buffer).await {
-        Ok((end, filled)) => {
-            let early = &buffer[end..filled];
-            match core::str::from_utf8(&buffer[..end]).map(|head| parse_upload(head, TOKEN)) {
-                Ok(Ok(Upload::App(length))) => match receive(socket, ota, length, early).await {
-                    Ok(()) => Ok("installed, rebooting"),
-                    Err(error) => Err(app_failure(error)),
-                },
-                Ok(Ok(Upload::Web(length))) => {
-                    match receive_web(socket, ota, length, early).await {
-                        Ok(()) => Ok("web partition updated, rebooting"),
-                        Err(error) => Err(web_failure(error)),
-                    }
-                }
-                Ok(Err(error)) => Err((error.status(), error.message())),
-                Err(_) => Err((400, "malformed request")),
-            }
-        }
-        Err(http::ReadError::TooLarge) => Err((431, "request headers too large")),
-        Err(_) => Err((400, "malformed request")),
+        Ok((end, filled)) => match parse_upload(&buffer[..end], TOKEN) {
+            Ok(upload) => match receive(socket, ota, upload, &buffer[end..filled]).await {
+                Ok(()) => Ok(match upload {
+                    Upload::App(_) => "installed, rebooting",
+                    Upload::Web(_) => "web partition updated, rebooting",
+                }),
+                Err(error) => Err(error.response()),
+            },
+            Err(error) => Err((error.status(), error.message())),
+        },
+        Err(error) => Err((error.status(), error.message())),
     };
     let (status, message) = match outcome {
         Ok(message) => (200, message),
@@ -194,83 +186,21 @@ async fn serve(socket: &mut TcpSocket<'_>, ota: &mut Ota) -> bool {
     status == 200
 }
 
-fn app_failure(error: OtaError) -> (u16, &'static str) {
-    match error {
-        OtaError::Busy => (409, "a move is running; stop it first"),
-        OtaError::TooLarge => (413, "image larger than its slot"),
-        OtaError::Image(ImageError::WrongChip(_)) => (422, "image built for another chip"),
-        OtaError::Image(_) => (422, "not an app image; send espflash save-image output"),
-        OtaError::Truncated => (400, "body shorter than Content-Length"),
-        OtaError::Partitions | OtaError::Flash => (500, "flash error"),
-    }
-}
-
-fn web_failure(error: WebError) -> (u16, &'static str) {
-    match error {
-        WebError::Busy => (409, "a move is running; stop it first"),
-        WebError::WrongSize => (
-            422,
-            "not the size of the web partition; send pack_web.py output",
-        ),
-        WebError::NotAnNvsPage => (422, "not NVS pages; send pack_web.py output"),
-        WebError::Truncated => (400, "body shorter than Content-Length"),
-        WebError::Partitions | WebError::Flash => (500, "flash error"),
-    }
-}
-
 async fn receive(
     socket: &mut TcpSocket<'_>,
     ota: &mut Ota,
-    length: usize,
+    upload: Upload,
     early: &[u8],
 ) -> Result<(), OtaError> {
-    let mut update = ota.begin(length)?;
-    let early = &early[..early.len().min(length)];
-    if !early.is_empty() {
-        update.write(early)?;
-    }
-    let mut buffer = [0; 2_048];
-    let mut remaining = length - early.len();
-    while remaining > 0 {
-        let wanted = remaining.min(buffer.len());
-        let read = socket
-            .read(&mut buffer[..wanted])
-            .await
-            .map_err(|_| OtaError::Truncated)?;
-        if read == 0 {
-            return Err(OtaError::Truncated);
-        }
-        update.write(&buffer[..read])?;
-        remaining -= read;
-    }
-    update.finish()
-}
-
-async fn receive_web(
-    socket: &mut TcpSocket<'_>,
-    ota: &mut Ota,
-    length: usize,
-    early: &[u8],
-) -> Result<(), WebError> {
-    let mut update = ota.begin_web(length)?;
-    let early = &early[..early.len().min(length)];
-    if !early.is_empty() {
-        update.write(early)?;
-    }
-    let mut buffer = [0; 2_048];
-    let mut remaining = length - early.len();
-    while remaining > 0 {
-        let wanted = remaining.min(buffer.len());
-        let read = socket
-            .read(&mut buffer[..wanted])
-            .await
-            .map_err(|_| WebError::Truncated)?;
-        if read == 0 {
-            return Err(WebError::Truncated);
-        }
-        update.write(&buffer[..read])?;
-        remaining -= read;
-    }
+    let mut update = ota.begin(upload)?;
+    http::read_body(
+        socket,
+        early,
+        upload.length(),
+        OtaError::Truncated,
+        |bytes| update.write(bytes),
+    )
+    .await?;
     update.finish()
 }
 

@@ -128,8 +128,9 @@ rather than a prebuilt `core` for Xtensa.
 
 An application can be tried on a board with nothing attached by building
 `omnimotion-board` with the `virtual-hardware` feature. The TMC2209s become
-`omnimotion::devices::tmc2209::emulator::TmcEmulator` (the drivers you pass as
-fitted answer, healthy and standing still), VMOTOR reads 24 V and the e-stop reads
+`omnimotion::devices::tmc2209::emulator::TmcEmulator` (the sockets named with
+`virtual_hardware::fit_drivers` before `Board::new`, all three by default, answer,
+healthy and standing still), VMOTOR reads 24 V and the e-stop reads
 closed. The endstops come from a `virtual_hardware::Sensors` model that the
 application installs with `virtual_hardware::install`: it is given the step
 counters, which the step engine keeps whether or not a motor is connected, and
@@ -151,7 +152,7 @@ an application's simulator, which lists its crates as path dependencies:
 
 | Crate | What it is |
 | --- | --- |
-| `core` (`omnimotion-sim`) | The virtual clock, both cores' executors, the ESP32-S3 peripherals the board uses (GPIO, I²C, UART, ADC, TIMG0's alarm and watchdog), the three TMC2209 sockets on the UART, the console, HTTP connections handed in by the host, NVS, MCU resets, and `stepper`: a hybrid stepper on a TMC2209 turning its load, with missed steps counted |
+| `core` (`omnimotion-sim`) | The virtual clock, both cores' executors, the ESP32-S3 peripherals the board uses (GPIO, I²C, UART, ADC, TIMG0's alarm and watchdog), the three TMC2209 sockets on the UART (speaking `omnimotion::devices::tmc2209::wire`, the driver's side of the protocol that `TmcEmulator` also uses), the console, HTTP connections handed in by the host, NVS, MCU resets, and `stepper`: a hybrid stepper on a TMC2209 turning its load, with missed steps counted |
 | `board` (`omnimotion-board-sim`) | The real `omnimotion-board` sources through `#[path]`, with only boot, network and storage replaced |
 | `shims/*` | Stand-ins for `esp-hal`, `esp-rtos`, `esp-alloc`, `esp-println`, `esp-backtrace`, `esp-bootloader-esp-idf` and `embassy-net`, which call `omnimotion_sim::hal` |
 
@@ -437,14 +438,20 @@ homing sensor configuration stays in the application dispatcher.
 delta to an absolute modulo target. Exact half turns choose the positive
 direction. `fraction_target` computes every indexed target directly as a
 rational fraction of the period, avoiding accumulated rounding error.
-`Motion::move_to_modulo` is the board-level convenience; the ISR's raw `i64`
-counters remain unwrapped and authoritative.
+`Motion::move_to_modulo` is the board-level convenience (`Motion::move_axis_to`
+is its linear counterpart); the ISR's raw `i64` counters remain unwrapped and
+authoritative, and `motion::position_from(origin)` reads positions from them on
+any core. A move of no steps completes at once unless a fault is latched.
 
 `Lifecycle` owns only generic job transitions and operation counts. Applications
 call `begin_operation` and `complete_operation` around their own choreography.
 An immediate pause or stop remains transitional until its abort is
 acknowledged. A pause additionally requires the application to declare that it
-has recovered to a safe operation boundary. Stop and explicit fault recovery
+has recovered to a safe operation boundary. When `request_pause` or
+`request_stop` says an operation is running, abort it (`AbortHandle::abort`
+requests the abort and waits for it), then `pause_interrupted` or
+`stop_interrupted` completes the transition in one call. A refused transition
+converts into `CommandError::InvalidState`. Stop and explicit fault recovery
 discard resumable progress; a fault can never be resumed as though it were a
 pause. `restore(progress)` starts a job from a saved checkpoint, already
 `completed` operations in; `rewind(completed)` takes a paused job back, so the
@@ -715,10 +722,13 @@ endpoint. The ring is `omnimotion::machine::log::LogBuffer`.
 ## HTTP
 
 `omnimotion::net::http` parses a request head (`parse_head`, against an API
-token compared in constant time, with `normalized_path` and `reason_phrase`),
-and `omnimotion_board::net::http` reads a head off a socket (`read_head`) and
-writes a whole response (`respond`). The update endpoint is built on them, and
-so can an application's API be.
+token compared in constant time, with `normalized_path` and `reason_phrase`)
+and names what can go wrong with a request (`RequestError`, with its status and
+message). `omnimotion_board::net::http` reads a head off a socket
+(`read_head`), feeds a body of known length to a sink (`read_body`, starting
+with the bytes that came with the head) and writes a whole response
+(`respond`). The update endpoint is built on them, and so can an application's
+API be.
 
 ## Wiring self-check
 
@@ -777,7 +787,9 @@ schematic sheet 9. Open and shorted coils would need the motors energised,
 which the check deliberately never does.
 
 The judgement and the report text live in `omnimotion::devices::check` and are tested
-on the host. `board.check()` only gathers the readings, and it changes neither
+on the host. An application that adds checks of its own writes them with the
+same marks (`OK`, `FAIL`, `WARN`, `INFO`) and ends with `Totals`.
+`board.check()` only gathers the readings, and it changes neither
 `board.inventory` nor the set of available axes.
 
 ## Board-level operating limits

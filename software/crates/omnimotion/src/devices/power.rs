@@ -1,7 +1,7 @@
 use core::fmt;
 
 /// R2 100 k / R3 10 k divider on VMOTOR.
-const MOTOR_RATIO: i32 = 11;
+pub const MOTOR_RATIO: i32 = 11;
 
 const MOTOR_PRESENT_MV: i32 = 1_000;
 

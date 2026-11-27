@@ -269,7 +269,10 @@ pub(crate) fn start(
     let (producer, consumer) = QUEUE.init(Queue::new()).split();
 
     const PERIOD_US: u32 = 1_000_000 / TICK_HZ;
-    const _: () = assert!(PERIOD_US * TICK_HZ == 1_000_000, "TIMG0 ticks whole microseconds");
+    const _: () = assert!(
+        PERIOD_US * TICK_HZ == 1_000_000,
+        "TIMG0 ticks whole microseconds"
+    );
 
     let timers = TimerGroup::new(timg0);
     let timer = timers.timer0;

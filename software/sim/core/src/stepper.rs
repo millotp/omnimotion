@@ -2,7 +2,7 @@
 //! driver's field, the supply and back-EMF limits, damping, drag with stiction and optional hard stops.
 //! Missed steps are counted in whole electrical cycles.
 
-use std::f64::consts::{SQRT_2, TAU};
+use std::f64::consts::{FRAC_PI_2, PI, SQRT_2, TAU};
 
 use serde::{Deserialize, Serialize};
 
@@ -89,9 +89,22 @@ impl Rotor {
         }
     }
 
+    /// How far the rotor trails `chip`'s field, in full steps (within ±2; negative when it runs ahead).
+    pub fn lag_full_steps(&self, motor: &Motor, chip: &Chip) -> f64 {
+        let delta = motor.pole_pairs * self.phi - chip.electrical_angle();
+        ((delta + PI).rem_euclid(TAU) - PI) / FRAC_PI_2
+    }
+
     /// Advances `dt` seconds behind `chip`'s field at phase current `i_rms`. Returns the full steps slipped,
     /// if the rotor just fell a whole electrical cycle behind (or ahead).
-    pub fn step(&mut self, motor: &Motor, chip: &Chip, i_rms: f64, load: &Load, dt: f64) -> Option<i64> {
+    pub fn step(
+        &mut self,
+        motor: &Motor,
+        chip: &Chip,
+        i_rms: f64,
+        load: &Load,
+        dt: f64,
+    ) -> Option<i64> {
         let field = chip.electrical_angle();
         let restarted = std::mem::replace(&mut self.power_ons, chip.power_ons) != chip.power_ons;
         self.integrate(motor, field, restarted, i_rms, load, dt);
@@ -101,7 +114,15 @@ impl Rotor {
     /// Magnetic torque toward the field, damping about the field's speed, Coulomb drag with stiction, and
     /// the hard stops. `restarted` says the driver's sequencer went back to its start (power-on): its jump is
     /// not motion.
-    fn integrate(&mut self, motor: &Motor, field: f64, restarted: bool, i_rms: f64, load: &Load, dt: f64) {
+    fn integrate(
+        &mut self,
+        motor: &Motor,
+        field: f64,
+        restarted: bool,
+        i_rms: f64,
+        load: &Load,
+        dt: f64,
+    ) {
         let p = motor.pole_pairs;
         let raw = match self.last_field {
             Some(last) if !restarted => (field - last) / p / dt,

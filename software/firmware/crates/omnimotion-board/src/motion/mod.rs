@@ -32,9 +32,22 @@ pub struct AbortAcknowledgement {
 }
 
 /// The raw step counters, readable from any core while a move runs. They are
-/// unaffected by `Motion::zero`; subtract `Motion::origin` for positions.
+/// unaffected by `Motion::zero`; [`position_from`] gives positions.
 pub fn raw_position() -> [i64; AXES] {
     stepper::position()
+}
+
+/// The positions from the zeros `origin` (`Motion::origin`, or a status
+/// snapshot's), readable from any core while a move runs.
+pub fn position_from(origin: [i64; AXES]) -> Result<[i64; AXES], MotionError> {
+    let raw = stepper::position();
+    let mut position = [0; AXES];
+    for axis in 0..AXES {
+        position[axis] = raw[axis]
+            .checked_sub(origin[axis])
+            .ok_or(MotionError::CoordinateOverflow)?;
+    }
+    Ok(position)
 }
 
 /// Cross-core request path into the step ISR. It does not borrow `Motion`.
@@ -63,6 +76,12 @@ impl AbortHandle {
             ticket,
             position: stepper::position(),
         }
+    }
+
+    /// Requests an abort and waits until the step ISR has acknowledged it.
+    pub async fn abort(&self) -> AbortAcknowledgement {
+        let ticket = self.request();
+        self.wait(ticket).await
     }
 }
 
@@ -117,6 +136,16 @@ impl Motion {
         axis < AXES && self.available_axes & (1 << axis) != 0
     }
 
+    fn check_axis(&self, axis: usize) -> Result<(), MotionError> {
+        if axis >= AXES {
+            Err(MotionError::InvalidAxis)
+        } else if !self.axis_available(axis) {
+            Err(MotionError::AxisUnavailable)
+        } else {
+            Ok(())
+        }
+    }
+
     pub fn available_axes(&self) -> u8 {
         self.available_axes
     }
@@ -152,14 +181,7 @@ impl Motion {
     }
 
     pub fn position(&self) -> Result<[i64; AXES], MotionError> {
-        let raw = stepper::position();
-        let mut position = [0; AXES];
-        for axis in 0..AXES {
-            position[axis] = raw[axis]
-                .checked_sub(self.origin[axis])
-                .ok_or(MotionError::CoordinateOverflow)?;
-        }
-        Ok(position)
+        position_from(self.origin)
     }
 
     /// The raw counters that read as zero: `position()` is `raw_position()` minus this.
@@ -169,26 +191,11 @@ impl Motion {
 
     /// Makes the current position of `axis` read as zero.
     pub fn zero(&mut self, axis: usize) -> Result<(), MotionError> {
-        if axis >= AXES {
-            return Err(MotionError::InvalidAxis);
-        }
-        if !self.axis_available(axis) {
-            return Err(MotionError::AxisUnavailable);
-        }
+        self.check_axis(axis)?;
         if !self.stepper.drained() || stepper::aborting() {
             return Err(MotionError::Busy);
         }
-        if stepper::underrun() {
-            supervisor::latch(Fault::Underrun);
-            return Err(MotionError::FaultLatched);
-        }
-        if stepper::engine_fault() {
-            supervisor::latch(Fault::MotionEngine);
-            return Err(MotionError::FaultLatched);
-        }
-        if supervisor::latched() != 0 {
-            return Err(MotionError::FaultLatched);
-        }
+        check_faults()?;
         self.origin[axis] = stepper::position()[axis];
         Ok(())
     }
@@ -221,6 +228,16 @@ impl Motion {
         self.move_to(steps).await
     }
 
+    /// Moves one axis to `target` steps from its zero; the others stay put.
+    pub async fn move_axis_to(&mut self, axis: usize, target: i64) -> Result<Outcome, MotionError> {
+        self.check_axis(axis)?;
+        let mut delta = [0; AXES];
+        delta[axis] = target
+            .checked_sub(self.position()?[axis])
+            .ok_or(MotionError::CoordinateOverflow)?;
+        self.move_by(delta).await
+    }
+
     /// Moves one rotary axis to an absolute modulo target by the shortest path.
     pub async fn move_to_modulo(
         &mut self,
@@ -228,23 +245,19 @@ impl Motion {
         target: i64,
         period_steps: u64,
     ) -> Result<Outcome, MotionError> {
-        if axis >= AXES {
-            return Err(MotionError::InvalidAxis);
-        }
-        if !self.axis_available(axis) {
-            return Err(MotionError::AxisUnavailable);
-        }
+        self.check_axis(axis)?;
         let period = RotaryPeriod::new(period_steps)?;
-        let delta = period.shortest_delta(self.position()?[axis], target);
-        if delta == 0 {
-            return Ok(Outcome::Completed);
-        }
-        let mut move_delta = [0; AXES];
-        move_delta[axis] = delta;
-        self.move_by(move_delta).await
+        let mut delta = [0; AXES];
+        delta[axis] = period.shortest_delta(self.position()?[axis], target);
+        self.move_by(delta).await
     }
 
+    /// A move of no steps completes at once, unless a fault is latched.
     pub async fn move_by(&mut self, delta: [i64; AXES]) -> Result<Outcome, MotionError> {
+        if delta == [0; AXES] {
+            check_faults()?;
+            return Ok(Outcome::Completed);
+        }
         let limits = group_limits(&self.axes, &delta)?;
         self.move_by_with(delta, limits).await
     }
@@ -271,17 +284,7 @@ impl Motion {
         {
             return Err(MotionError::AxisUnavailable);
         }
-        if stepper::underrun() {
-            supervisor::latch(Fault::Underrun);
-            return Err(MotionError::FaultLatched);
-        }
-        if stepper::engine_fault() {
-            supervisor::latch(Fault::MotionEngine);
-            return Err(MotionError::FaultLatched);
-        }
-        if supervisor::latched() != 0 {
-            return Err(MotionError::FaultLatched);
-        }
+        check_faults()?;
         let _moving = flash::Moving::begin().await.ok_or(MotionError::Busy)?;
         let abort_generation = stepper::abort_generation();
         if stepper::aborting() {
@@ -311,9 +314,7 @@ impl Motion {
                 planner.stop();
                 stopping = true;
             }
-            let requested = stepper::abort_generation();
-            if requested != abort_generation {
-                stepper::await_abort(requested).await;
+            if aborted_since(abort_generation).await {
                 return Ok(Outcome::Aborted);
             }
             if stepper::underrun() || stepper::engine_fault() {
@@ -323,8 +324,7 @@ impl Motion {
             while let Some(segment) = pending {
                 match self.stepper.enqueue(segment, abort_generation) {
                     Ok(()) => {
-                        if stepper::abort_generation() != abort_generation {
-                            stepper::await_abort(stepper::abort_generation()).await;
+                        if aborted_since(abort_generation).await {
                             return Ok(Outcome::Aborted);
                         }
                         pending = match planner.next().transpose() {
@@ -352,23 +352,10 @@ impl Motion {
             }
         }
 
-        let requested = stepper::abort_generation();
-        if requested != abort_generation {
-            stepper::await_abort(requested).await;
+        if aborted_since(abort_generation).await {
             return Ok(Outcome::Aborted);
         }
-
-        if stepper::underrun() {
-            supervisor::latch(Fault::Underrun);
-            return Err(MotionError::FaultLatched);
-        }
-        if stepper::engine_fault() {
-            supervisor::latch(Fault::MotionEngine);
-            return Err(MotionError::FaultLatched);
-        }
-        if supervisor::latched() != 0 {
-            return Err(MotionError::FaultLatched);
-        }
+        check_faults()?;
         if self.position()? == target {
             Ok(Outcome::Completed)
         } else {
@@ -383,4 +370,28 @@ impl Motion {
     pub(crate) fn clear_fault(&mut self) -> bool {
         self.stepper.clear_fault()
     }
+}
+
+/// Latches what the step ISR reported, and refuses while any fault is latched.
+fn check_faults() -> Result<(), MotionError> {
+    if stepper::underrun() {
+        supervisor::latch(Fault::Underrun);
+    }
+    if stepper::engine_fault() {
+        supervisor::latch(Fault::MotionEngine);
+    }
+    if supervisor::latched() != 0 {
+        return Err(MotionError::FaultLatched);
+    }
+    Ok(())
+}
+
+/// Waits out an abort requested since `generation`, if there was one.
+async fn aborted_since(generation: AbortTicket) -> bool {
+    let requested = stepper::abort_generation();
+    if requested == generation {
+        return false;
+    }
+    stepper::await_abort(requested).await;
+    true
 }

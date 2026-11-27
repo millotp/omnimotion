@@ -2,22 +2,26 @@ use omnimotion::devices::check::{
     read_endstops, BoardReport, DriverCheck, DriverResult, DriverSamples, EndstopReading,
     Temperature,
 };
+use omnimotion::devices::tmc2209::wire::{
+    ioin, Pins, IOIN_DIAG as DIAG, IOIN_DIR as DIR, IOIN_ENN as ENN, IOIN_STEP as STEP,
+};
 use omnimotion::{EndstopConfig, Rails, ENDSTOPS};
 use tmc2209::reg;
 
-const ENN: u32 = 1 << 0;
-const MS1: u32 = 1 << 2;
-const MS2: u32 = 1 << 3;
-const DIAG: u32 = 1 << 4;
-const STEP: u32 = 1 << 7;
-const DIR: u32 = 1 << 9;
-
 /// What a correctly wired driver at `address` reports, outputs disabled.
 fn wired(address: u8) -> DriverSamples {
-    let straps = if address & 1 != 0 { MS1 } else { 0 } | if address & 2 != 0 { MS2 } else { 0 };
+    let disabled = Pins {
+        disabled: true,
+        ..Pins::default()
+    };
+    let stepped = Pins {
+        step: true,
+        dir: true,
+        ..disabled
+    };
     DriverSamples {
-        low: reg::IOIN(ENN | straps),
-        high: reg::IOIN(ENN | straps | STEP | DIR),
+        low: reg::IOIN(ioin(address, disabled)),
+        high: reg::IOIN(ioin(address, stepped)),
         mcu_diag: [false, false],
         global: reg::GSTAT(0),
         status: reg::DRV_STATUS(0),

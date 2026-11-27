@@ -5,16 +5,7 @@ use core::fmt::Write as _;
 use embassy_net::tcp::TcpSocket;
 use embedded_io_async::Write;
 use heapless::String;
-use omnimotion::net::http::{head_end, reason_phrase};
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum ReadError {
-    Io,
-    /// The peer closed before the head ended.
-    Closed,
-    /// The head did not fit the buffer.
-    TooLarge,
-}
+use omnimotion::net::http::{head_end, reason_phrase, RequestError};
 
 /// Reads until a whole head is in `buffer`, and returns its length (through
 /// the blank line) and how much of `buffer` was filled: the bytes between the
@@ -22,24 +13,53 @@ pub enum ReadError {
 pub async fn read_head(
     socket: &mut TcpSocket<'_>,
     buffer: &mut [u8],
-) -> Result<(usize, usize), ReadError> {
+) -> Result<(usize, usize), RequestError> {
     let mut filled = 0;
     loop {
         if let Some(end) = head_end(&buffer[..filled]) {
             return Ok((end, filled));
         }
         if filled == buffer.len() {
-            return Err(ReadError::TooLarge);
+            return Err(RequestError::HeadTooLarge);
         }
         let read = socket
             .read(&mut buffer[filled..])
             .await
-            .map_err(|_| ReadError::Io)?;
+            .map_err(|_| RequestError::Io)?;
         if read == 0 {
-            return Err(ReadError::Closed);
+            return Err(RequestError::Malformed);
         }
         filled += read;
     }
+}
+
+/// Hands a body of `length` bytes to `sink` as it arrives, starting with
+/// `early`, what `read_head` read past the head. A connection that ends or
+/// fails first gives `truncated`.
+pub async fn read_body<E>(
+    socket: &mut TcpSocket<'_>,
+    early: &[u8],
+    length: usize,
+    truncated: E,
+    mut sink: impl FnMut(&[u8]) -> Result<(), E>,
+) -> Result<(), E> {
+    let early = &early[..early.len().min(length)];
+    if !early.is_empty() {
+        sink(early)?;
+    }
+    let mut buffer = [0; 2_048];
+    let mut remaining = length - early.len();
+    while remaining > 0 {
+        let wanted = remaining.min(buffer.len());
+        match socket.read(&mut buffer[..wanted]).await {
+            Ok(read) if read > 0 => {
+                sink(&buffer[..read])?;
+                remaining -= read;
+            }
+            _ => return Err(truncated),
+        }
+    }
+    Ok(())
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -5,7 +5,7 @@ use embassy_sync::blocking_mutex::raw::RawMutex;
 use embassy_sync::blocking_mutex::Mutex;
 use embassy_sync::channel::Channel;
 
-use crate::{AbortState, AxisMask, JobProgress, LifecycleState, AXES};
+use crate::{AbortState, AxisMask, JobProgress, LifecycleError, LifecycleState, AXES};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct RequestId(pub u32);
@@ -56,6 +56,13 @@ impl CommandError {
             Self::FaultLatched => "fault latched",
             Self::InvalidCommand => "invalid command",
         }
+    }
+}
+
+/// A lifecycle that refuses a transition refuses the command that asked for it.
+impl From<LifecycleError> for CommandError {
+    fn from(_: LifecycleError) -> Self {
+        Self::InvalidState
     }
 }
 

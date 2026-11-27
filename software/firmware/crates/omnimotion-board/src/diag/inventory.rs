@@ -110,13 +110,18 @@ pub(crate) async fn find_oled<I: I2c>(i2c: &mut I) -> Option<u8> {
 pub(crate) async fn survey_drivers(tmc: &mut TmcBus) -> [DriverPresence; AXES] {
     let mut drivers = [DriverPresence::Missing; AXES];
     for (driver, address) in drivers.iter_mut().zip(ADDRESSES) {
-        *driver = match Driver::new(tmc, address).version().await {
-            Ok(VERSION) => DriverPresence::Responding,
-            Ok(version) => DriverPresence::Mismatched(version),
-            Err(_) => DriverPresence::Missing,
-        };
+        *driver = probe(tmc, address).await;
     }
     drivers
+}
+
+/// Asks the driver on `address` what it is.
+pub(crate) async fn probe(tmc: &mut TmcBus, address: u8) -> DriverPresence {
+    match Driver::new(tmc, address).version().await {
+        Ok(VERSION) => DriverPresence::Responding,
+        Ok(version) => DriverPresence::Mismatched(version),
+        Err(_) => DriverPresence::Missing,
+    }
 }
 
 impl fmt::Display for DriverPresence {

@@ -179,6 +179,14 @@ impl Lifecycle {
         Ok(())
     }
 
+    /// Pauses once the application has interrupted the running operation (if `request_pause` said one
+    /// was) and taken the machine back to the last completed-operation boundary.
+    pub fn pause_interrupted(&mut self) -> Result<(), LifecycleError> {
+        self.acknowledge_interruption()?;
+        self.declare_safe_boundary()?;
+        self.pause()
+    }
+
     pub fn resume(&mut self) -> Result<(), LifecycleError> {
         if self.state != LifecycleState::Paused {
             return Err(LifecycleError::InvalidTransition);
@@ -208,6 +216,12 @@ impl Lifecycle {
         }
         self.reset_to_idle();
         Ok(())
+    }
+
+    /// Stops once the application has interrupted the running operation, if `request_stop` said one was.
+    pub fn stop_interrupted(&mut self) -> Result<(), LifecycleError> {
+        self.acknowledge_interruption()?;
+        self.acknowledge_stop()
     }
 
     pub fn fault(&mut self) {

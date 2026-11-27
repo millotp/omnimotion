@@ -7,7 +7,7 @@
 use core::fmt;
 
 use crate::devices::endstop::{EndstopConfig, EndstopKind, ENDSTOPS};
-use crate::devices::power::{PowerSource, Rails, Volts};
+use crate::devices::power::{PowerSource, Rails, Volts, MOTOR_MAX_MV, MOTOR_MIN_MV};
 use crate::devices::tmc2209::reg;
 use crate::AXES;
 
@@ -165,10 +165,28 @@ impl BoardReport {
     }
 }
 
-const OK: &str = "ok  ";
-const FAIL: &str = "FAIL";
-const WARN: &str = "warn";
-const INFO: &str = "--  ";
+/// The marks a check report puts on each line, for applications that add lines of their own.
+pub const OK: &str = "ok  ";
+pub const FAIL: &str = "FAIL";
+pub const WARN: &str = "warn";
+pub const INFO: &str = "--  ";
+
+/// A check report's last line.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Totals {
+    pub failures: usize,
+    pub warnings: usize,
+}
+
+impl fmt::Display for Totals {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "result: {} failure(s), {} warning(s)",
+            self.failures, self.warnings
+        )
+    }
+}
 
 impl fmt::Display for BoardReport {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -181,9 +199,12 @@ impl fmt::Display for BoardReport {
                 f,
                 "  power   {WARN} USB only; drivers need VMOTOR to be checked"
             )?,
-            PowerSource::BulkOutOfRange => {
-                writeln!(f, "  power   {FAIL} bulk {volts}, outside 11-26 V")?
-            }
+            PowerSource::BulkOutOfRange => writeln!(
+                f,
+                "  power   {FAIL} bulk {volts}, outside {} to {}",
+                Volts(MOTOR_MIN_MV),
+                Volts(MOTOR_MAX_MV)
+            )?,
         }
 
         match self.estop_closed {
@@ -257,11 +278,10 @@ impl fmt::Display for BoardReport {
             }
         }
 
-        write!(
-            f,
-            "result: {} failure(s), {} warning(s)",
-            self.failures(),
-            self.warnings()
-        )
+        let totals = Totals {
+            failures: self.failures(),
+            warnings: self.warnings(),
+        };
+        write!(f, "{totals}")
     }
 }

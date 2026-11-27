@@ -1,4 +1,4 @@
-use crate::motion::profile::{Limits, LimitsError};
+use crate::motion::profile::{check_rates, Limits, LimitsError};
 use crate::AXES;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -26,24 +26,16 @@ pub struct AxisConfig {
 
 impl AxisConfig {
     pub fn validate(&self) -> Result<(), UnitError> {
-        if !self.steps_per_unit.is_finite()
-            || !self.max_velocity.is_finite()
-            || !self.max_acceleration.is_finite()
-            || !self.min_velocity.is_finite()
-        {
-            return Err(UnitError::NonFinite);
-        }
-        if self.steps_per_unit <= 0.0
-            || self.max_velocity <= 0.0
-            || self.max_acceleration <= 0.0
-            || self.min_velocity <= 0.0
-        {
-            return Err(UnitError::NonPositive);
-        }
-        if self.min_velocity > self.max_velocity {
-            return Err(UnitError::MinimumExceedsMaximum);
-        }
-        Ok(())
+        check_rates(
+            &[self.steps_per_unit, self.max_acceleration],
+            self.min_velocity,
+            self.max_velocity,
+        )
+        .map_err(|error| match error {
+            LimitsError::NonFinite => UnitError::NonFinite,
+            LimitsError::NonPositive => UnitError::NonPositive,
+            LimitsError::MinimumExceedsMaximum => UnitError::MinimumExceedsMaximum,
+        })
     }
 
     pub fn steps(&self, units: f32) -> Result<i64, UnitError> {

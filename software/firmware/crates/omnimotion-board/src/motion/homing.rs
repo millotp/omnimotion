@@ -185,7 +185,11 @@ impl Board {
 }
 
 /// The pass's travel and backoff in steps, and its rate limits.
-fn pass_steps(motion: &Motion, axis: usize, config: &HomingConfig) -> Result<(i64, i64, Limits), HomingError> {
+fn pass_steps(
+    motion: &Motion,
+    axis: usize,
+    config: &HomingConfig,
+) -> Result<(i64, i64, Limits), HomingError> {
     let axis_config = motion.config(axis)?;
     let travel_steps = axis_config
         .steps(config.travel)
@@ -243,7 +247,6 @@ async fn pass(
     run_config: &DriverConfig,
 ) -> Result<bool, HomingError> {
     let (travel_steps, backoff_steps, limits) = pass_steps(motion, axis, config)?;
-
     let trigger = match config.sensor {
         HomingSensor::StallGuard { .. } => HomingTrigger::Diag(axis),
         HomingSensor::Endstop { endstop } => {
@@ -261,107 +264,35 @@ async fn pass(
             HomingTrigger::Endstop(endstop)
         }
     };
-    let stallguard = matches!(config.sensor, HomingSensor::StallGuard { .. });
-
     if faults.diag_asserted(axis) {
         return fail_safe(faults, Fault::Diag, HomingError::PreassertedDiag).await;
     }
 
-    if let HomingSensor::StallGuard {
-        current_ma,
-        threshold,
-    } = config.sensor
-    {
-        let microsteps = run_config.microsteps.number_of_microsteps();
-        if let Err(error) =
-            arm_stallguard(driver, limits.max_rate, current_ma, threshold, microsteps).await
-        {
-            restore(driver, run_config, stallguard).await;
-            return fail_safe(faults, Fault::Driver, HomingError::Driver(error)).await;
-        }
-
-        match select(Timer::after(SETTLE), faults.wait_for_homing_event(trigger)).await {
-            Either::First(()) => {}
-            Either::Second(None) => {
-                restore(driver, run_config, stallguard).await;
-                return fail_safe(faults, Fault::Diag, HomingError::PreassertedDiag).await;
-            }
-            Either::Second(Some(_)) => {
-                if !restore(driver, run_config, stallguard).await {
-                    return Err(HomingError::Cleanup);
-                }
-                return Err(HomingError::Aborted);
-            }
-        }
-    }
-
-    let mut travel = [0i64; AXES];
-    travel[axis] = travel_steps;
-
-    // A stall must stop at once, as the motor is pushing the frame. A sensor
-    // trip ramps down instead, so a heavy axis keeps its steps, and the
-    // backoff is measured from where the sensor tripped.
-    let tripped_at = Cell::new(None);
-    let aborts = stepper::abort_generation();
-    let watch = async {
-        let event = faults.wait_for_homing_event(trigger).await;
-        if event.is_some() {
-            return event;
-        }
-        if stallguard {
-            let generation = stepper::abort();
-            stepper::await_abort(generation).await;
-            tripped_at.set(Some(stepper::position()[axis]));
-            return None;
-        }
-        tripped_at.set(Some(stepper::position()[axis]));
-        stepper::request_stop();
-        Some(faults.wait_for_fault().await)
+    let plan = Plan {
+        axis,
+        sensor: config.sensor,
+        trigger,
+        travel_steps,
+        limits,
     };
-    let ended = select(motion.move_by_with(travel, limits), watch).await;
-    let interrupted = stepper::abort_generation() != aborts && !stallguard;
-    let triggered = match (ended, tripped_at.get()) {
-        (Either::First(Err(error)), _) => {
-            restore(driver, run_config, stallguard).await;
-            return fail_safe(faults, Fault::MotionEngine, HomingError::Motion(error)).await;
-        }
-        (Either::First(Ok(_)), Some(_)) | (Either::Second(None), _) if !interrupted => true,
-        (Either::First(Ok(Outcome::Completed)), None) => false,
-        _ => {
-            if !restore(driver, run_config, stallguard).await {
-                return Err(HomingError::Cleanup);
-            }
-            return Err(HomingError::Aborted);
-        }
+    let approach = approach(motion, driver, faults, &plan, run_config).await;
+    let restored = restore(driver, run_config, plan.stallguard()).await;
+    let tripped_at = match approach {
+        Ok(tripped_at) => tripped_at,
+        Err(Interrupted::Fault(fault, error)) => return fail_safe(faults, fault, error).await,
+        Err(Interrupted::Aborted) if restored => return Err(HomingError::Aborted),
+        Err(Interrupted::Aborted) => return Err(HomingError::Cleanup),
     };
-
-    // A stall only reports load, so ask the driver whether that load was the
-    // frame or a real fault.
-    if triggered && stallguard {
-        let severe = match driver_is_faulted(driver).await {
-            Ok(severe) => severe,
-            Err(error) => {
-                restore(driver, run_config, stallguard).await;
-                return fail_safe(faults, Fault::Driver, HomingError::Driver(error)).await;
-            }
-        };
-        if severe {
-            restore(driver, run_config, stallguard).await;
-            return fail_safe(faults, Fault::Driver, HomingError::DriverFault).await;
-        }
-    }
-
-    if !restore(driver, run_config, stallguard).await {
+    if !restored {
         return fail_safe(faults, Fault::Driver, HomingError::Cleanup).await;
     }
 
-    if !triggered {
+    let Some(trip) = tripped_at else {
         faults.disable_drivers();
         return Ok(false);
-    }
+    };
 
     // Come off the stop straight away, or the motor keeps pushing the frame.
-    let trip = tripped_at.get().unwrap_or(stepper::position()[axis]);
     let mut backoff = [0i64; AXES];
     backoff[axis] = trip - backoff_steps * travel_steps.signum() - stepper::position()[axis];
     let backed_off = match select(
@@ -389,6 +320,124 @@ async fn pass(
 
     motion.zero(axis)?;
     Ok(true)
+}
+
+/// The approach of one pass, in steps.
+struct Plan {
+    axis: usize,
+    sensor: HomingSensor,
+    trigger: HomingTrigger,
+    travel_steps: i64,
+    limits: Limits,
+}
+
+impl Plan {
+    fn stallguard(&self) -> bool {
+        matches!(self.sensor, HomingSensor::StallGuard { .. })
+    }
+}
+
+/// Why the approach ended early. Either way the driver is restored after it.
+enum Interrupted {
+    /// Latch this fault and fail with this error.
+    Fault(Fault, HomingError),
+    Aborted,
+}
+
+/// The approach to the stop, with StallGuard armed for a stall pass: where the
+/// sensor tripped, or `None` when the travel ran out first.
+async fn approach(
+    motion: &mut Motion,
+    driver: &mut TmcDriver<'_>,
+    faults: &mut FaultSupervisor,
+    plan: &Plan,
+    run_config: &DriverConfig,
+) -> Result<Option<i64>, Interrupted> {
+    let (axis, trigger, stallguard) = (plan.axis, plan.trigger, plan.stallguard());
+    if let HomingSensor::StallGuard {
+        current_ma,
+        threshold,
+    } = plan.sensor
+    {
+        let microsteps = run_config.microsteps.number_of_microsteps();
+        arm_stallguard(
+            driver,
+            plan.limits.max_rate,
+            current_ma,
+            threshold,
+            microsteps,
+        )
+        .await
+        .map_err(|error| Interrupted::Fault(Fault::Driver, HomingError::Driver(error)))?;
+        match select(Timer::after(SETTLE), faults.wait_for_homing_event(trigger)).await {
+            Either::First(()) => {}
+            Either::Second(None) => {
+                return Err(Interrupted::Fault(
+                    Fault::Diag,
+                    HomingError::PreassertedDiag,
+                ))
+            }
+            Either::Second(Some(_)) => return Err(Interrupted::Aborted),
+        }
+    }
+
+    let mut travel = [0i64; AXES];
+    travel[axis] = plan.travel_steps;
+
+    // A stall must stop at once, as the motor is pushing the frame. A sensor
+    // trip ramps down instead, so a heavy axis keeps its steps, and the
+    // backoff is measured from where the sensor tripped.
+    let tripped_at = Cell::new(None);
+    let aborts = stepper::abort_generation();
+    let watch = async {
+        let event = faults.wait_for_homing_event(trigger).await;
+        if event.is_some() {
+            return event;
+        }
+        if stallguard {
+            let generation = stepper::abort();
+            stepper::await_abort(generation).await;
+            tripped_at.set(Some(stepper::position()[axis]));
+            return None;
+        }
+        tripped_at.set(Some(stepper::position()[axis]));
+        stepper::request_stop();
+        Some(faults.wait_for_fault().await)
+    };
+    let ended = select(motion.move_by_with(travel, plan.limits), watch).await;
+    let interrupted = stepper::abort_generation() != aborts && !stallguard;
+    let triggered = match (ended, tripped_at.get()) {
+        (Either::First(Err(error)), _) => {
+            return Err(Interrupted::Fault(
+                Fault::MotionEngine,
+                HomingError::Motion(error),
+            ))
+        }
+        (Either::First(Ok(_)), Some(_)) | (Either::Second(None), _) if !interrupted => true,
+        (Either::First(Ok(Outcome::Completed)), None) => false,
+        _ => return Err(Interrupted::Aborted),
+    };
+    if !triggered {
+        return Ok(None);
+    }
+
+    // A stall only reports load, so ask the driver whether that load was the
+    // frame or a real fault.
+    if stallguard {
+        match driver_is_faulted(driver).await {
+            Ok(false) => {}
+            Ok(true) => return Err(Interrupted::Fault(Fault::Driver, HomingError::DriverFault)),
+            Err(error) => {
+                return Err(Interrupted::Fault(
+                    Fault::Driver,
+                    HomingError::Driver(error),
+                ))
+            }
+        }
+    }
+    Ok(Some(
+        tripped_at.get().unwrap_or(stepper::position()[plan.axis]),
+    ))
 }
 
 async fn driver_is_faulted(driver: &mut TmcDriver<'_>) -> Result<bool, Error<TmcError>> {

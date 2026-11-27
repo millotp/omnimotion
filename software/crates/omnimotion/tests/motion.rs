@@ -1,13 +1,11 @@
 use omnimotion::{
     generation_is_acknowledged, group_limits, nco_increment, steps_per_mm, AbortGenerations,
     AbortTicket, AxisConfig, EngineError, Limits, LimitsError, MoveStart, PlanError, Planner,
-    Profile, Segment, StepEngine, Trapezoid, UnitError, AXES,
+    Profile, Segment, StepEngine, Trapezoid, UnitError, AXES, TICK_HZ,
 };
 use std::collections::VecDeque;
 use std::sync::{Arc, Barrier};
 use std::thread;
-
-const TICK_HZ: u32 = 40_000;
 
 fn limits() -> Limits {
     Limits {

@@ -137,9 +137,7 @@ impl Board {
             self.configure().await?
         } else {
             self.ready_to_configure()?;
-            let reset = self.apply_drivers().await?;
-            self.check_power()?;
-            reset
+            self.apply_drivers().await?
         };
         self.faults.enable_drivers();
         Ok(reset)
@@ -162,12 +160,9 @@ impl Board {
         if self.inventory.drivers_responding() == 0 {
             return Err(StartError::NoDrivers);
         }
-        let reset = self.apply_drivers().await?;
         self.motion
             .set_available_axes(self.inventory.responding_axes());
-
-        self.check_power()?;
-        Ok(reset)
+        self.apply_drivers().await
     }
 
     fn ready_to_configure(&mut self) -> Result<(), StartError> {
@@ -180,8 +175,8 @@ impl Board {
         self.check_power()
     }
 
-    /// Writes each surveyed driver's configuration, returning the axes whose
-    /// driver had reset.
+    /// Writes each surveyed driver's configuration, then checks the e-stop and
+    /// supply again. Returns the axes whose driver had reset.
     async fn apply_drivers(&mut self) -> Result<AxisMask, StartError> {
         let mut reset = 0;
         for axis in 0..AXES {
@@ -197,6 +192,7 @@ impl Board {
                 return Err(StartError::DriverConfig);
             }
         }
+        self.check_power()?;
         Ok(reset)
     }
 
@@ -256,13 +252,12 @@ impl Board {
         #[cfg(not(feature = "virtual-hardware"))]
         let uart = Uart::new(
             peripherals.uart1,
-            UartConfig::default().with_baudrate(pins::TMC_BAUD),
+            UartConfig::default().with_baudrate(omnimotion::devices::tmc2209::BAUD),
         )
         .expect("UART1")
         .with_tx(peripherals.tx)
         .with_rx(peripherals.rx)
         .into_async();
-        // M0 and M1 are fitted; the third socket is empty, as on the machine.
         #[cfg(feature = "virtual-hardware")]
         // In a static so the board moves a pointer, not the emulator's registers, through frames of the
         // application core's small stack.
@@ -271,8 +266,10 @@ impl Board {
                 omnimotion::devices::tmc2209::emulator::TmcEmulator,
             > = static_cell::StaticCell::new();
             EMULATOR.init_with(|| {
-                omnimotion::devices::tmc2209::emulator::TmcEmulator::new([true, true, false])
-                    .with_pins(crate::virtual_hardware::pins)
+                omnimotion::devices::tmc2209::emulator::TmcEmulator::new(
+                    crate::virtual_hardware::fitted_drivers(),
+                )
+                .with_pins(crate::virtual_hardware::pins)
             })
         };
 

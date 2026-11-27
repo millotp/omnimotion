@@ -102,39 +102,24 @@ async fn board_task(pins: BoardPins, machine: BoardMachineControl<'static, (), D
             MachineCommand::Standard(StandardCommand::Pause) => match lifecycle.request_pause() {
                 Ok(needs_abort) => {
                     if needs_abort {
-                        let abort = board.motion.abort_handle();
-                        let ticket = abort.request();
-                        abort.wait(ticket).await;
-                        lifecycle
-                            .acknowledge_interruption()
-                            .expect("abort acknowledged");
-                        lifecycle
-                            .declare_safe_boundary()
-                            .expect("application recovery boundary");
+                        board.motion.abort_handle().abort().await;
                     }
-                    lifecycle.pause().map_err(|_| CommandError::InvalidState)
+                    lifecycle.pause_interrupted().map_err(CommandError::from)
                 }
-                Err(_) => Err(CommandError::InvalidState),
+                Err(error) => Err(error.into()),
             },
             MachineCommand::Standard(StandardCommand::Resume) => lifecycle
                 .resume()
                 .and_then(|_| lifecycle.begin_operation().map(|_| ()))
-                .map_err(|_| CommandError::InvalidState),
+                .map_err(CommandError::from),
             MachineCommand::Standard(StandardCommand::Stop) => match lifecycle.request_stop() {
                 Ok(needs_abort) => {
                     if needs_abort {
-                        let abort = board.motion.abort_handle();
-                        let ticket = abort.request();
-                        abort.wait(ticket).await;
-                        lifecycle
-                            .acknowledge_interruption()
-                            .expect("abort acknowledged");
+                        board.motion.abort_handle().abort().await;
                     }
-                    lifecycle
-                        .acknowledge_stop()
-                        .map_err(|_| CommandError::InvalidState)
+                    lifecycle.stop_interrupted().map_err(CommandError::from)
                 }
-                Err(_) => Err(CommandError::InvalidState),
+                Err(error) => Err(error.into()),
             },
             MachineCommand::Standard(StandardCommand::EnableDrivers) => board
                 .enable()

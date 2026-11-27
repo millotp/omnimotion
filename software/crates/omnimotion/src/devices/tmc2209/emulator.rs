@@ -9,7 +9,8 @@ use core::convert::Infallible;
 use ::tmc2209::reg::Address;
 use embedded_io_async::{ErrorType, Read, Write};
 
-use super::{ADDRESSES, VERSION};
+use super::wire::{self, Pins, Request, GSTAT_FLAGS};
+use super::ADDRESSES;
 
 /// Two echoes and a reply fit with room to spare; the bus reads them back at once.
 const RX_CAPACITY: usize = 64;
@@ -44,33 +45,10 @@ const KNOWN: [Address; 24] = [
 ];
 const REGISTERS: usize = KNOWN.len();
 
-/// Where register `address` is kept, if it is one of [`KNOWN`].
-fn slot(address: Address) -> usize {
-    KNOWN
-        .iter()
-        .position(|&known| known == address)
-        .expect("a register the emulator keeps")
-}
-
 /// Where the register at the datagram's 7-bit `address` is kept, if the emulator keeps it.
 fn slot_of(address: u8) -> Option<usize> {
     KNOWN.iter().position(|&known| known as u8 == address)
 }
-/// Registers carry 7-bit addresses; bit 7 of the address byte marks a write.
-const WRITE_FLAG: u8 = 0x80;
-const READ_DATAGRAM: usize = 4;
-const WRITE_DATAGRAM: usize = 8;
-/// `GSTAT` has three flags, each cleared by writing a 1 to it.
-const GSTAT_FLAGS: u32 = 0b111;
-const GSTAT_RESET: u32 = 1;
-/// `DRV_STATUS.STST`: the motor stands still.
-const STANDSTILL: u32 = 1 << 31;
-/// `IOIN` bits for the pins the driver reads: ENN (high is disabled), MS1, MS2, STEP and DIR.
-const IOIN_ENN: u32 = 1 << 0;
-const IOIN_MS1: u32 = 1 << 2;
-const IOIN_MS2: u32 = 1 << 3;
-const IOIN_STEP: u32 = 1 << 7;
-const IOIN_DIR: u32 = 1 << 9;
 
 /// The levels of one driver's STEP and DIR inputs, as the board drives them.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -93,19 +71,10 @@ pub struct TmcEmulator {
 impl TmcEmulator {
     /// `fitted[n]` is whether the driver at UART address `n` is there.
     pub fn new(fitted: [bool; ADDRESSES.len()]) -> Self {
-        let mut chip = [0; REGISTERS];
-        // Power-on values from the datasheet.
-        chip[slot(Address::GCONF)] = 0x0000_0101;
-        chip[slot(Address::GSTAT)] = GSTAT_RESET;
-        chip[slot(Address::IHOLD_IRUN)] = 0x0000_1F10;
-        chip[slot(Address::TPOWERDOWN)] = 20;
-        chip[slot(Address::TSTEP)] = 0x000F_FFFF;
-        chip[slot(Address::CHOPCONF)] = 0x1000_0053;
-        chip[slot(Address::DRV_STATUS)] = STANDSTILL;
         Self {
             fitted,
             pins: |_| StepDir::default(),
-            registers: [chip; ADDRESSES.len()],
+            registers: [KNOWN.map(wire::power_on); ADDRESSES.len()],
             rx: [0; RX_CAPACITY],
             rx_start: 0,
             rx_len: 0,
@@ -117,19 +86,6 @@ impl TmcEmulator {
     pub fn with_pins(mut self, pins: fn(usize) -> StepDir) -> Self {
         self.pins = pins;
         self
-    }
-
-    /// What the driver at `chip` reads on its pins: ENN inactive (the outputs are off), its address on
-    /// MS1 and MS2, DIAG low, and the STEP and DIR levels, over its version.
-    fn inputs(&self, chip: usize) -> u32 {
-        let StepDir { step, dir } = (self.pins)(chip);
-        let address = u32::from(ADDRESSES[chip]);
-        u32::from(VERSION) << 24
-            | IOIN_ENN
-            | if address & 1 != 0 { IOIN_MS1 } else { 0 }
-            | if address & 2 != 0 { IOIN_MS2 } else { 0 }
-            | if step { IOIN_STEP } else { 0 }
-            | if dir { IOIN_DIR } else { 0 }
     }
 
     fn push(&mut self, bytes: &[u8]) {
@@ -144,62 +100,62 @@ impl TmcEmulator {
 
     /// Acts on every well-formed request in `bytes`, skipping line noise.
     fn receive_requests(&mut self, mut bytes: &[u8]) {
-        while bytes.len() >= READ_DATAGRAM {
-            if bytes[0] != ::tmc2209::SYNC_AND_RESERVED {
-                bytes = &bytes[1..];
-                continue;
-            }
-            let length = if bytes[2] & WRITE_FLAG != 0 {
-                WRITE_DATAGRAM
-            } else {
-                READ_DATAGRAM
-            };
-            if bytes.len() < length {
+        loop {
+            let (used, request) = wire::next_request(bytes);
+            if used == 0 {
                 return;
             }
-            let (datagram, rest) = bytes.split_at(length);
-            if ::tmc2209::crc(&datagram[..length - 1]) == datagram[length - 1] {
-                self.handle(datagram);
+            bytes = &bytes[used..];
+            if let Some(request) = request {
+                self.handle(request);
             }
-            bytes = rest;
         }
     }
 
-    fn handle(&mut self, datagram: &[u8]) {
+    fn handle(&mut self, request: Request) {
+        let (Request::Read { address, register }
+        | Request::Write {
+            address, register, ..
+        }) = request;
         let Some(chip) = ADDRESSES
             .iter()
-            .position(|&address| address == datagram[1])
+            .position(|&known| known == address)
             .filter(|&chip| self.fitted[chip])
         else {
             return;
         };
-        let register = datagram[2] & !WRITE_FLAG;
         let kept = slot_of(register);
-        if datagram.len() == WRITE_DATAGRAM {
-            let value = u32::from_be_bytes([datagram[3], datagram[4], datagram[5], datagram[6]]);
-            let registers = &mut self.registers[chip];
-            if let Some(kept) = kept {
-                if register == Address::GSTAT as u8 {
-                    registers[kept] &= !(value & GSTAT_FLAGS);
-                } else if register != Address::IOIN as u8 && register != Address::DRV_STATUS as u8 {
-                    registers[kept] = value;
+        match request {
+            Request::Write { value, .. } => {
+                let registers = &mut self.registers[chip];
+                if let Some(kept) = kept {
+                    if register == Address::GSTAT as u8 {
+                        registers[kept] &= !(value & GSTAT_FLAGS);
+                    } else if register != Address::IOIN as u8
+                        && register != Address::DRV_STATUS as u8
+                    {
+                        registers[kept] = value;
+                    }
                 }
+                let count = &mut registers[slot_of(Address::IFCNT as u8).expect("IFCNT is kept")];
+                *count = u32::from((*count as u8).wrapping_add(1));
             }
-            let count = &mut registers[slot(Address::IFCNT)];
-            *count = u32::from((*count as u8).wrapping_add(1));
-        } else {
-            let mut reply = [0u8; WRITE_DATAGRAM];
-            reply[0] = ::tmc2209::SYNC_AND_RESERVED;
-            reply[1] = ::tmc2209::MASTER_ADDR;
-            reply[2] = register;
-            let value = if register == Address::IOIN as u8 {
-                self.inputs(chip)
-            } else {
-                kept.map_or(0, |kept| self.registers[chip][kept])
-            };
-            reply[3..7].copy_from_slice(&value.to_be_bytes());
-            reply[7] = ::tmc2209::crc(&reply[..7]);
-            self.push(&reply);
+            Request::Read { .. } => {
+                // ENN reads inactive: the outputs are off whenever the emulator is asked.
+                let value = if register == Address::IOIN as u8 {
+                    let StepDir { step, dir } = (self.pins)(chip);
+                    let pins = Pins {
+                        disabled: true,
+                        diag: false,
+                        step,
+                        dir,
+                    };
+                    wire::ioin(ADDRESSES[chip], pins)
+                } else {
+                    kept.map_or(0, |kept| self.registers[chip][kept])
+                };
+                self.push(&wire::reply(register, value));
+            }
         }
     }
 }

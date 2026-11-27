@@ -1,7 +1,8 @@
 //! What stands in for the machine when the board has nothing attached (feature `virtual-hardware`).
 //!
-//! The TMC2209s are `omnimotion::devices::tmc2209::emulator::TmcEmulator`, which reads back the STEP and
-//! DIR levels the wiring check drives ([`pins`]), VMOTOR reads [`MOTOR_MV`] and the e-stop is closed. The
+//! The TMC2209s are `omnimotion::devices::tmc2209::emulator::TmcEmulator`, in the sockets the application
+//! names with [`fit_drivers`], which reads back the STEP and DIR levels the wiring check drives ([`pins`]),
+//! VMOTOR reads [`MOTOR_MV`] and the e-stop is closed. The
 //! endstops come from a [`Sensors`] model the application installs: it gets the step counters, which the
 //! step engine keeps whether or not a motor is connected, and says which endstops would be triggered with
 //! the machine at that position.
@@ -33,6 +34,24 @@ static SENSORS: AtomicPtr<&'static dyn Sensors> = AtomicPtr::new(core::ptr::null
 /// Installs the machine model. With none installed, no endstop is ever triggered.
 pub fn install(model: &'static dyn Sensors) {
     SENSORS.store(Box::leak(Box::new(model)), Ordering::Release);
+}
+
+/// Bit n set: socket Mn holds an emulated driver.
+static FITTED: AtomicU8 = AtomicU8::new((1 << AXES) - 1);
+
+/// Leaves the sockets with `fitted[n]` false empty, so their drivers never answer. Takes effect at
+/// `Board::new`; all three are fitted unless this is called before it.
+pub fn fit_drivers(fitted: [bool; AXES]) {
+    let mask = fitted
+        .iter()
+        .enumerate()
+        .fold(0, |mask, (axis, &fitted)| mask | u8::from(fitted) << axis);
+    FITTED.store(mask, Ordering::Relaxed);
+}
+
+pub(crate) fn fitted_drivers() -> [bool; AXES] {
+    let mask = FITTED.load(Ordering::Relaxed);
+    core::array::from_fn(|axis| mask & (1 << axis) != 0)
 }
 
 /// What a hand has done to the machine: counters added to the step engine's, and endstops held on.

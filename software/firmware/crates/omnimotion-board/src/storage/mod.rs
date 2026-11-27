@@ -27,9 +27,7 @@ use esp_hal::peripherals::FLASH;
 use esp_nvs::error::Error as NvsError;
 use esp_nvs::{Key, Nvs};
 use esp_storage::FlashStorage;
-
-/// The NVS limit on a key or namespace, excluding the null terminator.
-pub const MAX_NAME_LEN: usize = 15;
+pub use omnimotion::machine::persistence::{names_fit, MAX_NAME_LEN};
 
 /// Room for the page cache plus one blob in flight. Applications storing
 /// anything larger should install their own allocator instead of `init_heap`.
@@ -73,15 +71,7 @@ impl Store {
     /// not fetch from flash meanwhile. On the board's core that stalls the
     /// supervisor too, which `TransactionalStore` keeps to idle motion.
     pub fn new(flash: FLASH<'static>) -> Result<Self, StorageError> {
-        flash::exclusive(|| {
-            let mut storage = FlashStorage::new(flash).multicore_auto_park();
-
-            let (offset, size) = nvs_partition(&mut storage, PARTITION_LABEL)?;
-
-            Nvs::new(offset, size, storage)
-                .map(|nvs| Self { nvs })
-                .map_err(StorageError::Nvs)
-        })
+        open_nvs(flash, PARTITION_LABEL).map(|nvs| Self { nvs })
     }
 
     /// Raw bytes, for content that is already encoded. Blobs may span pages and
@@ -113,10 +103,22 @@ impl Store {
 }
 
 pub(crate) fn names(namespace: &str, key: &str) -> Result<(Key, Key), StorageError> {
-    if namespace.len() > MAX_NAME_LEN || key.len() > MAX_NAME_LEN {
+    if !names_fit(namespace, key) {
         return Err(StorageError::NameTooLong);
     }
     Ok((Key::from_str(namespace), Key::from_str(key)))
+}
+
+/// Opens the NVS partition labelled `label`.
+pub(crate) fn open_nvs(
+    flash: FLASH<'static>,
+    label: &str,
+) -> Result<Nvs<FlashStorage<'static>>, StorageError> {
+    flash::exclusive(|| {
+        let mut storage = FlashStorage::new(flash).multicore_auto_park();
+        let (offset, size) = nvs_partition(&mut storage, label)?;
+        Nvs::new(offset, size, storage).map_err(StorageError::Nvs)
+    })
 }
 
 /// Offset and size of the NVS partition labelled `label` in the table on `storage`.
